@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.class
+.venv/
+venv/
+*.duckdb
+*.parquet
+*.pytest_cache/
+
+# Node
+node_modules/
+dist/
+.env
+.env.local
+
+# Match data & heavy binaries
+*.zst
+*.jsonl
+data/raw/
+stl-hackathon-2026-grid-starter/
+
+# Keep config directories
+!.idea/
+!.junie/

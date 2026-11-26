@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import AtmosphericBackground from './components/AtmosphericBackground';
-import FloatingNav from './components/FloatingNav';
-import HeroMatchHeader from './components/HeroMatchHeader';
+import Sidebar from './components/Sidebar';
+import TopTrackerBar from './components/TopTrackerBar';
+import RightSummarySidebar from './components/RightSummarySidebar';
 import DraftMatrix from './components/DraftMatrix';
 import MacroScouting from './components/MacroScouting';
 import CoachBriefingModal from './components/CoachBriefingModal';
@@ -144,7 +145,7 @@ export default function App() {
     champions
   ]);
 
-  // Global Keyboard Shortcuts (1-5, Tab, Esc)
+  // Global Keyboard Shortcuts (1-5, Tab, Esc, ⌘K)
   useEffect(() => {
     const handleKeyDown = (e) => {
       // Don't trigger if user is typing in an input
@@ -163,6 +164,10 @@ export default function App() {
       } else if (e.key === 'Escape') {
         setShowBriefingModal(false);
         setSelectedRole(null);
+      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        const searchInput = document.querySelector('input[type="text"]');
+        if (searchInput) searchInput.focus();
       }
     };
 
@@ -313,66 +318,89 @@ export default function App() {
   };
 
   return (
-    <div className="relative min-h-screen text-slate-100 font-sans antialiased overflow-x-hidden pb-12">
+    <div className="flex min-h-screen min-w-[1240px] bg-[#07090E] text-slate-100 font-sans antialiased overflow-x-auto select-none">
       {/* High-Resolution Looping Video & Concentric Celestial Orbits */}
       <AtmosphericBackground />
 
-      {/* Floating Frosted Glass Capsule Navigation Bar */}
-      <FloatingNav
+      {/* Left Docked Sidebar (Full Height, Frosted Glass) */}
+      <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        series={series}
         seriesFormat={seriesFormat}
         setSeriesFormat={setSeriesFormat}
         selectedOpponent={selectedOpponent}
         setSelectedOpponent={setSelectedOpponent}
-        onOpenBriefing={() => setShowBriefingModal(true)}
         onResetSeries={handleResetSeries}
         backendStatus={backendStatus}
+        lockedCount={lockedChampionsForCurrentGame.length}
       />
 
-      {/* Hero Editorial Studio Header (Split Lab / Purple Desert Style) */}
-      <HeroMatchHeader
+      {/* Center Main Workspace (Full Width, Zero Side Margins) */}
+      <main className="flex-1 min-w-0 flex flex-col h-screen overflow-y-auto z-10 relative">
+        {/* Top Focal Tracker Bar */}
+        <TopTrackerBar
+          series={series}
+          activeGame={activeGame}
+          setActiveGame={setActiveGame}
+          seriesFormat={seriesFormat}
+          selectedOpponent={selectedOpponent}
+          onOpenBriefing={() => setShowBriefingModal(true)}
+          onResetSeries={handleResetSeries}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          backendStatus={backendStatus}
+          lockedCount={lockedChampionsForCurrentGame.length}
+          onAutoSolve={handleAutoSolve}
+          selectedSide={selectedSide}
+          setSelectedSide={setSelectedSide}
+        />
+
+        {/* Center Workspace Content */}
+        <div className="flex-1 w-full p-3">
+          {activeTab === 'DRAFT' ? (
+            <DraftMatrix
+              currentGame={currentGame}
+              series={series}
+              champions={champions}
+              selectedSide={selectedSide}
+              setSelectedSide={setSelectedSide}
+              roleFilter={roleFilter}
+              setRoleFilter={setRoleFilter}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              onPick={handlePick}
+              onUnpick={handleUnpick}
+              onSelectSlot={handleSelectSlot}
+              selectedRole={selectedRole}
+              recommendations={recommendations}
+              blueStats={blueStats}
+              redStats={redStats}
+              selectedOpponent={selectedOpponent}
+              lockedChampionsForCurrentGame={lockedChampionsForCurrentGame}
+            />
+          ) : (
+            <MacroScouting
+              macroData={macroData}
+              selectedOpponent={selectedOpponent}
+              setSelectedOpponent={setSelectedOpponent}
+            />
+          )}
+        </div>
+      </main>
+
+      {/* Right Docked Summary Sidebar (Full Height, Frosted Glass) */}
+      <RightSummarySidebar
         series={series}
         activeGame={activeGame}
         setActiveGame={setActiveGame}
         seriesFormat={seriesFormat}
-        selectedOpponent={selectedOpponent}
-        onOpenBriefing={() => setShowBriefingModal(true)}
+        champions={champions}
+        onQuickPick={(champ, side) => handlePick(champ, side || selectedSide)}
+        selectedSide={selectedSide}
         lockedCount={lockedChampionsForCurrentGame.length}
-        onAutoSolve={handleAutoSolve}
+        lockedChampions={lockedChampionsForCurrentGame}
       />
-
-      {/* Main Workspace View */}
-      <main className="relative z-10 mt-2">
-        {activeTab === 'DRAFT' ? (
-          <DraftMatrix
-            currentGame={currentGame}
-            series={series}
-            champions={champions}
-            selectedSide={selectedSide}
-            setSelectedSide={setSelectedSide}
-            roleFilter={roleFilter}
-            setRoleFilter={setRoleFilter}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            onPick={handlePick}
-            onUnpick={handleUnpick}
-            onSelectSlot={handleSelectSlot}
-            selectedRole={selectedRole}
-            recommendations={recommendations}
-            blueStats={blueStats}
-            redStats={redStats}
-            selectedOpponent={selectedOpponent}
-            lockedChampionsForCurrentGame={lockedChampionsForCurrentGame}
-          />
-        ) : (
-          <MacroScouting
-            macroData={macroData}
-            selectedOpponent={selectedOpponent}
-            setSelectedOpponent={setSelectedOpponent}
-          />
-        )}
-      </main>
 
       {/* Pre-Match Tactical One-Sheet Modal */}
       <CoachBriefingModal
@@ -386,7 +414,7 @@ export default function App() {
 
       {/* Clean Feedback Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-8 z-50 bg-[#161a2b] border border-white/20 text-white text-xs px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 font-medium backdrop-blur-xl animate-fade-in">
+        <div className="fixed bottom-6 right-72 z-50 bg-[#161a2b] border border-white/20 text-white text-xs px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 font-medium backdrop-blur-xl animate-fade-in">
           <span className="w-2 h-2 rounded-full bg-purple-400 animate-ping" />
           <span>{toastMessage}</span>
         </div>

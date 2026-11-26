@@ -3,13 +3,10 @@ import {
   Search, 
   FileText, 
   RotateCcw, 
-  ShieldCheck, 
-  Play, 
-  Square, 
-  ChevronRight,
-  ExternalLink,
+  Sparkles,
   Lock,
-  Sparkles
+  Zap,
+  ArrowRight
 } from 'lucide-react';
 
 export default function TopTrackerBar({
@@ -22,7 +19,11 @@ export default function TopTrackerBar({
   onResetSeries,
   searchQuery,
   setSearchQuery,
-  backendStatus
+  backendStatus,
+  lockedCount = 0,
+  onAutoSolve,
+  selectedSide,
+  setSelectedSide
 }) {
   const maxGames = seriesFormat === 'BO5' ? 5 : 3;
   const gameNumbers = Array.from({ length: maxGames }, (_, i) => i + 1);
@@ -30,10 +31,9 @@ export default function TopTrackerBar({
   const blueCount = Object.keys(currentGame?.blue_picks || {}).length;
   const redCount = Object.keys(currentGame?.red_picks || {}).length;
   const totalPicks = blueCount + redCount;
-  const lockedCount = series.locked_out_champions.length;
 
   return (
-    <div className="space-y-3.5 px-6 pt-5 pb-3 bg-[#F8F9FA] border-b border-slate-200/80">
+    <div className="space-y-3 px-5 pt-4 pb-3 bg-[#0C101D]/80 backdrop-blur-2xl border-b border-white/10 text-white select-none">
       {/* Top Header: Search & Secondary Actions */}
       <div className="flex items-center justify-between gap-4">
         {/* Search Input with ⌘K Badge */}
@@ -44,63 +44,106 @@ export default function TopTrackerBar({
             placeholder="Search champion, flex role, or trait (⌘K)..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-14 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-300 transition shadow-sm"
+            className="w-full bg-white/[0.06] border border-white/10 rounded-xl pl-9 pr-14 py-2 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400/40 transition shadow-inner"
           />
-          <div className="absolute right-2.5 top-2 flex items-center gap-1 text-[10px] font-mono font-medium text-slate-400 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded">
+          <div className="absolute right-2.5 top-2 flex items-center gap-1 text-[10px] font-mono font-medium text-slate-400 bg-white/10 border border-white/10 px-1.5 py-0.5 rounded">
             ⌘K
           </div>
         </div>
 
-        {/* Right Tools */}
+        {/* Right Tools & Badges */}
         <div className="flex items-center space-x-2.5">
-          <span className={`text-[11px] font-medium px-2.5 py-1 rounded-lg border flex items-center gap-1.5 ${
-            backendStatus?.status === 'online'
-              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-              : 'bg-amber-50 text-amber-700 border-amber-200'
-          }`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${backendStatus?.status === 'online' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-            {backendStatus?.status === 'online' ? 'FastAPI Connected' : 'Local Solver Simulation'}
-          </span>
+          {/* Active Side Indicator / Toggle */}
+          <div className="flex items-center bg-white/[0.05] p-0.5 rounded-xl border border-white/10 text-xs">
+            <button
+              onClick={() => setSelectedSide('BLUE')}
+              className={`px-2.5 py-1 rounded-lg font-bold transition flex items-center gap-1.5 ${
+                selectedSide === 'BLUE'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-300" />
+              <span>Blue</span>
+            </button>
+            <button
+              onClick={() => setSelectedSide('RED')}
+              className={`px-2.5 py-1 rounded-lg font-bold transition flex items-center gap-1.5 ${
+                selectedSide === 'RED'
+                  ? 'bg-rose-600 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-300" />
+              <span>Red</span>
+            </button>
+          </div>
 
+          {/* 1-Click AI Auto-Solve Button */}
+          <button
+            onClick={onAutoSolve}
+            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white text-xs font-bold py-1.5 px-3 rounded-xl flex items-center gap-1.5 shadow-md active:scale-95 transition"
+            title="Auto-draft optimal counter recommendation into target slot"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-purple-200" />
+            <span>Auto-Solve Pick</span>
+          </button>
+
+          {/* Coach Briefing Modal Trigger */}
           <button
             onClick={onOpenBriefing}
-            className="bg-white hover:bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold py-2 px-3.5 rounded-xl flex items-center gap-2 shadow-sm transition"
+            className="bg-white/10 hover:bg-white/15 border border-white/15 text-white text-xs font-semibold py-1.5 px-3 rounded-xl flex items-center gap-1.5 shadow-sm transition active:scale-95"
           >
-            <FileText className="w-3.5 h-3.5 text-slate-500" />
+            <FileText className="w-3.5 h-3.5 text-purple-300" />
             <span>Coach Briefing</span>
           </button>
+
+          {/* Engine Status */}
+          <span className={`text-[11px] font-medium px-2.5 py-1 rounded-xl border flex items-center gap-1.5 ${
+            backendStatus?.status === 'online'
+              ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+              : 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+          }`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${backendStatus?.status === 'online' ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+            {backendStatus?.status === 'online' ? 'FastAPI Connected' : 'Local Solver'}
+          </span>
         </div>
       </div>
 
       {/* Hero Focal Active Match Tracker (Matching Toggl Track Reference) */}
-      <div className="bg-[#18181B] text-white rounded-2xl p-4 shadow-md flex items-center justify-between border border-slate-800">
+      <div className="bg-[#121626]/90 border border-white/10 rounded-2xl p-3.5 shadow-xl flex items-center justify-between">
         {/* Left: Active Match Info */}
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" />
+            <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
             <span className="text-[11px] font-mono font-bold tracking-wider uppercase text-rose-300">
               LIVE MATCH
             </span>
           </div>
 
-          <div className="h-4 w-[1px] bg-slate-700" />
+          <div className="h-4 w-[1px] bg-white/10" />
 
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-bold text-sm text-white">Cloud9</span>
-              <span className="text-xs text-slate-400">vs</span>
-              <span className="font-bold text-sm text-white">{selectedOpponent}</span>
+              <span className="font-bold text-sm text-white font-display">Cloud9</span>
+              <span className="text-xs text-slate-400 font-mono">vs</span>
+              <span className="font-bold text-sm text-white font-display">{selectedOpponent}</span>
             </div>
             <div className="flex items-center gap-2 text-[11px] text-slate-400 mt-0.5">
-              <span>{seriesFormat} Series</span>
+              <span className="font-mono text-purple-300">{seriesFormat} Series</span>
               <span>•</span>
               <span className="text-slate-300 font-medium">Fearless Elimination Active</span>
-              {lockedCount > 0 && (
+              {lockedCount > 0 ? (
                 <>
                   <span>•</span>
                   <span className="text-rose-400 font-mono font-semibold flex items-center gap-1">
-                    <Lock className="w-3 h-3" /> {lockedCount} Inactive
+                    <Lock className="w-3 h-3" /> {lockedCount} Inactive (Locked)
                   </span>
+                </>
+              ) : (
+                <>
+                  <span>•</span>
+                  <span className="text-emerald-400 font-mono font-semibold">Full Pool Available</span>
                 </>
               )}
             </div>
@@ -110,19 +153,19 @@ export default function TopTrackerBar({
         {/* Center: Large Tabular Time / Phase Counter */}
         <div className="flex items-center space-x-3">
           <div className="bg-black/40 border border-white/10 rounded-xl px-4 py-1.5 flex items-center gap-2.5">
-            <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">
+            <span className="text-[10px] font-mono text-purple-300 uppercase tracking-widest font-bold">
               GAME {activeGame}
             </span>
-            <span className="font-mono text-lg font-bold tracking-tight text-white tabular-nums">
-              {totalPicks === 10 ? 'DRAFT COMPLETE' : `${totalPicks}/10 UNITS PICKED`}
+            <span className="font-mono text-base font-bold tracking-tight text-white tabular-nums">
+              {totalPicks === 10 ? 'DRAFT COMPLETE' : `${totalPicks}/10 UNITS DRAFTED`}
             </span>
           </div>
         </div>
 
         {/* Right: Game Switcher & Action Controls */}
         <div className="flex items-center space-x-2">
-          {/* Game Switcher Pills */}
-          <div className="flex items-center bg-white/10 p-1 rounded-xl border border-white/10">
+          {/* Game Switcher Pills (G1 to G5) */}
+          <div className="flex items-center bg-white/[0.06] p-1 rounded-xl border border-white/10">
             {gameNumbers.map((gNum) => {
               const isActive = activeGame === gNum;
               const gPicks = Object.keys(series.games[gNum]?.blue_picks || {}).length +
@@ -134,8 +177,8 @@ export default function TopTrackerBar({
                   onClick={() => setActiveGame(gNum)}
                   className={`px-3 py-1 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 ${
                     isActive
-                      ? 'bg-white text-black shadow-sm'
-                      : 'text-slate-300 hover:text-white hover:bg-white/5'
+                      ? 'bg-white text-slate-950 font-bold shadow-md'
+                      : 'text-slate-300 hover:text-white hover:bg-white/10'
                   }`}
                 >
                   <span>G{gNum}</span>
@@ -151,9 +194,10 @@ export default function TopTrackerBar({
             })}
           </div>
 
+          {/* Reset Series Draft */}
           <button
             onClick={onResetSeries}
-            className="p-2 rounded-xl bg-white/10 hover:bg-rose-500/20 text-slate-300 hover:text-rose-300 border border-white/10 transition"
+            className="p-2 rounded-xl bg-white/10 hover:bg-rose-500/20 text-slate-300 hover:text-rose-300 border border-white/10 transition active:scale-95"
             title="Reset Series Draft"
           >
             <RotateCcw className="w-4 h-4" />

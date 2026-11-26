@@ -55,9 +55,9 @@ export default function DraftMatrix({
         {/* Center Column: Interactive Unit Pool & Selection Controls */}
         <div className="col-span-6 flex flex-col space-y-3.5">
           {/* Filter Bar with Role Tabs, Search & Side Selector */}
-          <div className="bg-[#121626]/80 backdrop-blur-2xl border border-white/10 rounded-2xl p-2.5 flex flex-wrap items-center justify-between shadow-xl gap-2">
+          <div className="bg-white/90 backdrop-blur-2xl border border-slate-200/90 rounded-2xl p-2.5 flex flex-wrap items-center justify-between shadow-sm gap-2 text-slate-900">
             {/* Role Filter Tabs */}
-            <div className="flex items-center space-x-1 bg-white/[0.04] p-1 rounded-xl border border-white/5">
+            <div className="flex items-center space-x-1 bg-slate-100 p-1 rounded-xl border border-slate-200/80">
               {['ALL', ...ROLES].map((r) => {
                 const isActive = roleFilter === r;
                 return (
@@ -66,8 +66,8 @@ export default function DraftMatrix({
                     onClick={() => setRoleFilter(r)}
                     className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all ${
                       isActive 
-                        ? 'bg-white text-slate-950 shadow-md font-bold' 
-                        : 'text-slate-300 hover:text-white hover:bg-white/[0.06]'
+                        ? 'bg-white text-slate-950 shadow-2xs font-bold' 
+                        : 'text-slate-600 hover:text-slate-950 hover:bg-white/60'
                     }`}
                   >
                     {r}
@@ -86,12 +86,12 @@ export default function DraftMatrix({
                   placeholder="Filter champion..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-white/[0.06] border border-white/10 rounded-xl pl-7 pr-6 py-1 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-purple-400 transition"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-7 pr-6 py-1 text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-purple-500 transition shadow-inner"
                 />
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery('')}
-                    className="absolute right-2 top-1.5 text-slate-400 hover:text-white"
+                    className="absolute right-2 top-1.5 text-slate-400 hover:text-slate-700"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -99,13 +99,13 @@ export default function DraftMatrix({
               </div>
 
               {/* Side Selector Pills */}
-              <div className="flex items-center space-x-1 bg-white/[0.04] p-1 rounded-xl border border-white/5 shrink-0">
+              <div className="flex items-center space-x-1 bg-slate-100 p-1 rounded-xl border border-slate-200/80 shrink-0">
                 <button
                   onClick={() => setSelectedSide('BLUE')}
                   className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all ${
                     selectedSide === 'BLUE' 
-                      ? 'bg-blue-600 text-white shadow-md' 
-                      : 'text-slate-400 hover:text-slate-200'
+                      ? 'bg-blue-600 text-white shadow-2xs' 
+                      : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
                   Blue (C9)
@@ -115,8 +115,8 @@ export default function DraftMatrix({
                   onClick={() => setSelectedSide('RED')}
                   className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all ${
                     selectedSide === 'RED' 
-                      ? 'bg-rose-600 text-white shadow-md' 
-                      : 'text-slate-400 hover:text-slate-200'
+                      ? 'bg-rose-600 text-white shadow-2xs' 
+                      : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
                   Red ({selectedOpponent})
@@ -126,7 +126,7 @@ export default function DraftMatrix({
           </div>
 
           {/* Unit Selection Grid */}
-          <div className="bg-[#121626]/80 backdrop-blur-2xl border border-white/10 rounded-2xl p-3.5 shadow-xl max-h-[460px] overflow-y-auto">
+          <div className="bg-white/90 backdrop-blur-2xl border border-slate-200/90 rounded-2xl p-3.5 shadow-sm max-h-[460px] overflow-y-auto">
             <div className="grid grid-cols-4 gap-2">
               {filteredChampions.map((champ) => {
                 const isLockedOut = lockedChampionsForCurrentGame.includes(champ.id);
@@ -140,33 +140,33 @@ export default function DraftMatrix({
                     onClick={() => onPick(champ, selectedSide)}
                     className={`relative p-2.5 rounded-xl border select-none transition-all ${
                       isLockedOut
-                        ? 'bg-rose-950/20 border-rose-900/40 opacity-45 cursor-not-allowed'
+                        ? 'bg-rose-50/70 border-rose-200 opacity-60 cursor-not-allowed'
                         : isPickedBlue
-                        ? 'bg-blue-950/40 border-blue-500 shadow-md cursor-default'
+                        ? 'bg-blue-50/80 border-blue-400 shadow-2xs cursor-default'
                         : isPickedRed
-                        ? 'bg-rose-950/40 border-rose-500 shadow-md cursor-default'
-                        : 'bg-white/[0.04] hover:bg-white/[0.09] border-white/10 hover:border-purple-400/60 hover:shadow-lg cursor-pointer active:scale-95'
+                        ? 'bg-rose-50/80 border-rose-400 shadow-2xs cursor-default'
+                        : 'bg-white hover:bg-slate-50 border-slate-200 hover:border-purple-300 hover:shadow-2xs cursor-pointer active:scale-95'
                     }`}
                   >
                     <div className="flex justify-between items-start">
-                      <span className="font-semibold text-xs text-white truncate pr-1 font-display">
+                      <span className="font-bold text-xs text-slate-900 truncate pr-1 font-display">
                         {champ.name}
                       </span>
-                      <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-white/10 text-slate-300 border border-white/10">
+                      <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-100 text-slate-700 border border-slate-200 font-bold">
                         {champ.tier}
                       </span>
                     </div>
 
-                    <div className="mt-2 flex items-center justify-between text-[10px] text-slate-400 font-mono">
+                    <div className="mt-2 flex items-center justify-between text-[10px] text-slate-500 font-mono">
                       <span>{champ.primary_role}</span>
                       <span className="capitalize">{champ.damage_type.toLowerCase()}</span>
                     </div>
 
                     {/* Lockout Overlay with Red Badge */}
                     {isLockedOut && (
-                      <div className="absolute inset-0 bg-black/75 rounded-xl flex flex-col items-center justify-center backdrop-blur-[1px]">
-                        <Lock className="w-3.5 h-3.5 text-rose-400 mb-0.5" />
-                        <span className="text-[8px] font-bold text-rose-300 tracking-wider uppercase font-mono">
+                      <div className="absolute inset-0 bg-white/80 rounded-xl flex flex-col items-center justify-center backdrop-blur-[1px]">
+                        <Lock className="w-3.5 h-3.5 text-rose-600 mb-0.5" />
+                        <span className="text-[8px] font-bold text-rose-700 tracking-wider uppercase font-mono">
                           SERIES LOCKED
                         </span>
                       </div>
@@ -175,12 +175,12 @@ export default function DraftMatrix({
                     {/* Picked Indicators */}
                     {isPickedBlue && (
                       <div className="absolute top-2 right-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-blue-400 block ring-2 ring-black" />
+                        <span className="w-2.5 h-2.5 rounded-full bg-blue-500 block ring-2 ring-white" />
                       </div>
                     )}
                     {isPickedRed && (
                       <div className="absolute top-2 right-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-rose-400 block ring-2 ring-black" />
+                        <span className="w-2.5 h-2.5 rounded-full bg-rose-500 block ring-2 ring-white" />
                       </div>
                     )}
                   </div>

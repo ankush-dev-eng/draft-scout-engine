@@ -318,7 +318,7 @@ export default function App() {
   };
 
   return (
-    <div className="flex min-h-screen min-w-[1240px] bg-[#07090E] text-slate-100 font-sans antialiased overflow-x-auto select-none">
+    <div className="flex min-h-screen min-w-[1240px] text-slate-900 font-sans antialiased overflow-x-auto select-none relative">
       {/* High-Resolution Looping Video & Concentric Celestial Orbits */}
       <AtmosphericBackground />
 
@@ -414,7 +414,7 @@ export default function App() {
 
       {/* Clean Feedback Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-72 z-50 bg-[#161a2b] border border-white/20 text-white text-xs px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 font-medium backdrop-blur-xl animate-fade-in">
+        <div className="fixed bottom-6 right-72 z-50 bg-slate-900 border border-slate-700 text-white text-xs px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 font-medium backdrop-blur-xl animate-fade-in">
           <span className="w-2 h-2 rounded-full bg-purple-400 animate-ping" />
           <span>{toastMessage}</span>
         </div>

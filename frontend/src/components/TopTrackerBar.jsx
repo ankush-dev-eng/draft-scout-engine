@@ -33,7 +33,7 @@ export default function TopTrackerBar({
   const totalPicks = blueCount + redCount;
 
   return (
-    <div className="space-y-3 px-5 pt-4 pb-3 bg-[#0C101D]/80 backdrop-blur-2xl border-b border-white/10 text-white select-none">
+    <div className="space-y-3 px-5 pt-4 pb-3 bg-white/85 backdrop-blur-2xl border-b border-slate-200/90 text-slate-900 select-none shadow-xs">
       {/* Top Header: Search & Secondary Actions */}
       <div className="flex items-center justify-between gap-4">
         {/* Search Input with ⌘K Badge */}
@@ -44,9 +44,9 @@ export default function TopTrackerBar({
             placeholder="Search champion, flex role, or trait (⌘K)..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-white/[0.06] border border-white/10 rounded-xl pl-9 pr-14 py-2 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400/40 transition shadow-inner"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-14 py-2 text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/30 transition shadow-inner"
           />
-          <div className="absolute right-2.5 top-2 flex items-center gap-1 text-[10px] font-mono font-medium text-slate-400 bg-white/10 border border-white/10 px-1.5 py-0.5 rounded">
+          <div className="absolute right-2.5 top-2 flex items-center gap-1 text-[10px] font-mono font-medium text-slate-500 bg-white border border-slate-200 px-1.5 py-0.5 rounded shadow-2xs">
             ⌘K
           </div>
         </div>
@@ -54,13 +54,13 @@ export default function TopTrackerBar({
         {/* Right Tools & Badges */}
         <div className="flex items-center space-x-2.5">
           {/* Active Side Indicator / Toggle */}
-          <div className="flex items-center bg-white/[0.05] p-0.5 rounded-xl border border-white/10 text-xs">
+          <div className="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200 text-xs">
             <button
               onClick={() => setSelectedSide('BLUE')}
               className={`px-2.5 py-1 rounded-lg font-bold transition flex items-center gap-1.5 ${
                 selectedSide === 'BLUE'
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               <span className="w-1.5 h-1.5 rounded-full bg-blue-300" />
@@ -70,8 +70,8 @@ export default function TopTrackerBar({
               onClick={() => setSelectedSide('RED')}
               className={`px-2.5 py-1 rounded-lg font-bold transition flex items-center gap-1.5 ${
                 selectedSide === 'RED'
-                  ? 'bg-rose-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-rose-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               <span className="w-1.5 h-1.5 rounded-full bg-rose-300" />
@@ -82,7 +82,7 @@ export default function TopTrackerBar({
           {/* 1-Click AI Auto-Solve Button */}
           <button
             onClick={onAutoSolve}
-            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white text-xs font-bold py-1.5 px-3 rounded-xl flex items-center gap-1.5 shadow-md active:scale-95 transition"
+            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white text-xs font-bold py-1.5 px-3 rounded-xl flex items-center gap-1.5 shadow-sm active:scale-95 transition"
             title="Auto-draft optimal counter recommendation into target slot"
           >
             <Sparkles className="w-3.5 h-3.5 text-purple-200" />
@@ -92,26 +92,26 @@ export default function TopTrackerBar({
           {/* Coach Briefing Modal Trigger */}
           <button
             onClick={onOpenBriefing}
-            className="bg-white/10 hover:bg-white/15 border border-white/15 text-white text-xs font-semibold py-1.5 px-3 rounded-xl flex items-center gap-1.5 shadow-sm transition active:scale-95"
+            className="bg-white hover:bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold py-1.5 px-3 rounded-xl flex items-center gap-1.5 shadow-2xs transition active:scale-95"
           >
-            <FileText className="w-3.5 h-3.5 text-purple-300" />
+            <FileText className="w-3.5 h-3.5 text-purple-600" />
             <span>Coach Briefing</span>
           </button>
 
           {/* Engine Status */}
           <span className={`text-[11px] font-medium px-2.5 py-1 rounded-xl border flex items-center gap-1.5 ${
             backendStatus?.status === 'online'
-              ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
-              : 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+              : 'bg-amber-50 text-amber-700 border-amber-200'
           }`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${backendStatus?.status === 'online' ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+            <span className={`w-1.5 h-1.5 rounded-full ${backendStatus?.status === 'online' ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
             {backendStatus?.status === 'online' ? 'FastAPI Connected' : 'Local Solver'}
           </span>
         </div>
       </div>
 
       {/* Hero Focal Active Match Tracker (Matching Toggl Track Reference) */}
-      <div className="bg-[#121626]/90 border border-white/10 rounded-2xl p-3.5 shadow-xl flex items-center justify-between">
+      <div className="bg-[#18181B] text-white rounded-2xl p-3.5 shadow-xl flex items-center justify-between border border-slate-800">
         {/* Left: Active Match Info */}
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
@@ -121,7 +121,7 @@ export default function TopTrackerBar({
             </span>
           </div>
 
-          <div className="h-4 w-[1px] bg-white/10" />
+          <div className="h-4 w-[1px] bg-slate-700" />
 
           <div>
             <div className="flex items-center gap-2">
@@ -152,7 +152,7 @@ export default function TopTrackerBar({
 
         {/* Center: Large Tabular Time / Phase Counter */}
         <div className="flex items-center space-x-3">
-          <div className="bg-black/40 border border-white/10 rounded-xl px-4 py-1.5 flex items-center gap-2.5">
+          <div className="bg-black/50 border border-white/10 rounded-xl px-4 py-1.5 flex items-center gap-2.5">
             <span className="text-[10px] font-mono text-purple-300 uppercase tracking-widest font-bold">
               GAME {activeGame}
             </span>
@@ -165,7 +165,7 @@ export default function TopTrackerBar({
         {/* Right: Game Switcher & Action Controls */}
         <div className="flex items-center space-x-2">
           {/* Game Switcher Pills (G1 to G5) */}
-          <div className="flex items-center bg-white/[0.06] p-1 rounded-xl border border-white/10">
+          <div className="flex items-center bg-white/10 p-1 rounded-xl border border-white/10">
             {gameNumbers.map((gNum) => {
               const isActive = activeGame === gNum;
               const gPicks = Object.keys(series.games[gNum]?.blue_picks || {}).length +

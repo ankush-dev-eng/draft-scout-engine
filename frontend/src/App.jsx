@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import Sidebar from './components/Sidebar';
-import TopTrackerBar from './components/TopTrackerBar';
-import RightSummarySidebar from './components/RightSummarySidebar';
+import React, { useState, useEffect, useRef } from 'react';
+import AtmosphericBackground from './components/AtmosphericBackground';
+import FloatingNav from './components/FloatingNav';
+import HeroMatchHeader from './components/HeroMatchHeader';
 import DraftMatrix from './components/DraftMatrix';
 import MacroScouting from './components/MacroScouting';
 import CoachBriefingModal from './components/CoachBriefingModal';
@@ -13,6 +13,8 @@ import {
   fetchRecommendations
 } from './api';
 
+const ROLES = ['TOP', 'JUNGLE', 'MID', 'BOT', 'SUPPORT'];
+
 export default function App() {
   const [activeTab, setActiveTab] = useState('DRAFT');
   const [activeGame, setActiveGame] = useState(1);
@@ -20,6 +22,7 @@ export default function App() {
   const [roleFilter, setRoleFilter] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSide, setSelectedSide] = useState('BLUE');
+  const [selectedRole, setSelectedRole] = useState(null);
   const [showBriefingModal, setShowBriefingModal] = useState(false);
   const [selectedOpponent, setSelectedOpponent] = useState('Team Liquid');
   const [backendStatus, setBackendStatus] = useState({ status: 'checking', engine: 'Connecting...' });
@@ -31,7 +34,6 @@ export default function App() {
     series_id: 'c9-pro-series-01',
     series_format: 'BO5',
     current_game: 1,
-    locked_out_champions: [],
     blue_team_name: 'Cloud9',
     red_team_name: 'Team Liquid',
     games: {
@@ -70,6 +72,22 @@ export default function App() {
     },
     early_game_favored: "Cloud9"
   });
+
+  // Calculate official Fearless Lockout roster for the CURRENT active game
+  // (All champions picked in games 1 through activeGame - 1)
+  const getLockedChampionsForGame = (gameNum) => {
+    const locked = new Set();
+    for (let g = 1; g < gameNum; g++) {
+      const gData = series.games[g];
+      if (gData) {
+        Object.values(gData.blue_picks || {}).forEach((id) => locked.add(id));
+        Object.values(gData.red_picks || {}).forEach((id) => locked.add(id));
+      }
+    }
+    return Array.from(locked);
+  };
+
+  const lockedChampionsForCurrentGame = getLockedChampionsForGame(activeGame);
 
   // Check backend health & fetch champions on initial load
   useEffect(() => {
@@ -112,7 +130,7 @@ export default function App() {
         roleFilter,
         champions,
         activePicks,
-        series.locked_out_champions
+        lockedChampionsForCurrentGame
       );
       setRecommendations(recs);
     }
@@ -121,11 +139,36 @@ export default function App() {
     activeGame,
     selectedSide,
     roleFilter,
-    series.locked_out_champions,
     currentGame.blue_picks,
     currentGame.red_picks,
     champions
   ]);
+
+  // Global Keyboard Shortcuts (1-5, Tab, Esc)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Don't trigger if user is typing in an input
+      if (['INPUT', 'SELECT', 'TEXTAREA'].includes(e.target.tagName)) return;
+
+      if (['1', '2', '3', '4', '5'].includes(e.key)) {
+        const targetG = parseInt(e.key, 10);
+        const maxG = seriesFormat === 'BO5' ? 5 : 3;
+        if (targetG <= maxG) {
+          setActiveGame(targetG);
+          showToast(`Switched to Game ${targetG}`);
+        }
+      } else if (e.key === 'Tab') {
+        e.preventDefault();
+        setSelectedSide((prev) => (prev === 'BLUE' ? 'RED' : 'BLUE'));
+      } else if (e.key === 'Escape') {
+        setShowBriefingModal(false);
+        setSelectedRole(null);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [seriesFormat]);
 
   const calculateCompStats = (picks) => {
     const list = Object.values(picks)
@@ -149,171 +192,202 @@ export default function App() {
 
   const showToast = (msg) => {
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
+    setTimeout(() => setToastMessage(null), 2800);
   };
 
+  // Select slot directly (e.g. clicking TOP or MID)
+  const handleSelectSlot = (side, role) => {
+    setSelectedSide(side);
+    setSelectedRole(role);
+    showToast(`Targeting ${side} ${role} slot`);
+  };
+
+  // Pick champion with resilient slot targeting
   const handlePick = (champion, side, forcedRole = null) => {
-    if (series.locked_out_champions.includes(champion.id)) {
-      showToast(`[SERIES LOCKOUT] ${champion.name} is eliminated from earlier games!`);
+    // 1. Check Fearless Lockout
+    if (lockedChampionsForCurrentGame.includes(champion.id)) {
+      showToast(`[FEARLESS LOCKOUT] ${champion.name} was already picked in an earlier game!`);
       return;
     }
 
-    const targetRole = forcedRole || champion.primary_role;
-    const picks = side === 'BLUE' ? { ...currentGame.blue_picks } : { ...currentGame.red_picks };
-    picks[targetRole] = champion.id;
+    const currentSidePicks = side === 'BLUE' ? { ...currentGame.blue_picks } : { ...currentGame.red_picks };
+    const opposingSidePicks = side === 'BLUE' ? currentGame.red_picks : currentGame.blue_picks;
 
-    // Recalculate locked out units across ALL games
-    const allPicked = new Set(series.locked_out_champions);
-    allPicked.add(champion.id);
+    // 2. Check if already picked in current game
+    if (Object.values(currentSidePicks).includes(champion.id) || Object.values(opposingSidePicks).includes(champion.id)) {
+      showToast(`${champion.name} is already drafted in Game ${activeGame}!`);
+      return;
+    }
 
+    // 3. Determine target slot
+    let targetRole = forcedRole || (selectedSide === side ? selectedRole : null);
+
+    if (!targetRole) {
+      if (!currentSidePicks[champion.primary_role]) {
+        targetRole = champion.primary_role;
+      } else {
+        // Find first unfilled role
+        targetRole = ROLES.find((r) => !currentSidePicks[r]) || champion.primary_role;
+      }
+    }
+
+    currentSidePicks[targetRole] = champion.id;
+
+    // Update series
     setSeries((prev) => ({
       ...prev,
-      locked_out_champions: Array.from(allPicked),
       games: {
         ...prev.games,
         [activeGame]: {
           ...prev.games[activeGame],
-          [side === 'BLUE' ? 'blue_picks' : 'red_picks']: picks
+          [side === 'BLUE' ? 'blue_picks' : 'red_picks']: currentSidePicks
         }
       }
     }));
 
-    showToast(`${champion.name} drafted for ${side} ${targetRole}`);
+    // Advance selected role to next unfilled slot
+    const nextUnfilled = ROLES.find((r) => r !== targetRole && !currentSidePicks[r]);
+    setSelectedRole(nextUnfilled || null);
+
+    showToast(`${champion.name} locked for ${side} ${targetRole}`);
   };
 
+  // Unpick role
   const handleUnpick = (side, role) => {
-    const picks = side === 'BLUE' ? { ...currentGame.blue_picks } : { ...currentGame.red_picks };
-    delete picks[role];
-
-    // Recalculate remaining locked out champions across other games
-    const remainingLocked = new Set();
-    Object.entries(series.games).forEach(([gNum, gData]) => {
-      const bPicks = gNum === String(activeGame) && side === 'BLUE' ? picks : gData.blue_picks;
-      const rPicks = gNum === String(activeGame) && side === 'RED' ? picks : gData.red_picks;
-      Object.values(bPicks || {}).forEach((id) => remainingLocked.add(id));
-      Object.values(rPicks || {}).forEach((id) => remainingLocked.add(id));
-    });
+    const currentSidePicks = side === 'BLUE' ? { ...currentGame.blue_picks } : { ...currentGame.red_picks };
+    delete currentSidePicks[role];
 
     setSeries((prev) => ({
       ...prev,
-      locked_out_champions: Array.from(remainingLocked),
       games: {
         ...prev.games,
         [activeGame]: {
           ...prev.games[activeGame],
-          [side === 'BLUE' ? 'blue_picks' : 'red_picks']: picks
+          [side === 'BLUE' ? 'blue_picks' : 'red_picks']: currentSidePicks
         }
       }
     }));
+
+    setSelectedSide(side);
+    setSelectedRole(role);
+    showToast(`Cleared ${side} ${role} slot`);
   };
 
-  const handleResetSeries = () => {
-    if (window.confirm('Reset series draft? All multi-game lockouts will be cleared.')) {
-      setSeries({
-        series_id: 'c9-pro-series-01',
-        series_format: seriesFormat,
-        current_game: 1,
-        locked_out_champions: [],
-        blue_team_name: 'Cloud9',
-        red_team_name: selectedOpponent,
-        games: {
-          1: { game_number: 1, blue_picks: {}, red_picks: {}, blue_bans: [], red_bans: [] },
-          2: { game_number: 2, blue_picks: {}, red_picks: {}, blue_bans: [], red_bans: [] },
-          3: { game_number: 3, blue_picks: {}, red_picks: {}, blue_bans: [], red_bans: [] },
-          4: { game_number: 4, blue_picks: {}, red_picks: {}, blue_bans: [], red_bans: [] },
-          5: { game_number: 5, blue_picks: {}, red_picks: {}, blue_bans: [], red_bans: [] }
-        }
-      });
-      setActiveGame(1);
-      showToast('Series reset. Clean draft slate restored.');
+  // 1-Click Auto-solve next pick using AI recommendation
+  const handleAutoSolve = () => {
+    const activePicks = selectedSide === 'BLUE' ? currentGame.blue_picks : currentGame.red_picks;
+    const nextUnfilledRole = selectedRole || ROLES.find((r) => !activePicks[r]);
+
+    if (!nextUnfilledRole) {
+      showToast(`${selectedSide} side is already fully drafted!`);
+      return;
+    }
+
+    if (recommendations && recommendations.length > 0) {
+      const best = recommendations[0].champion;
+      handlePick(best, selectedSide, nextUnfilledRole);
+    } else {
+      showToast('Computing optimal counter recommendation...');
     }
   };
 
+  // Instant smooth series reset
+  const handleResetSeries = () => {
+    setSeries({
+      series_id: 'c9-pro-series-01',
+      series_format: seriesFormat,
+      current_game: 1,
+      blue_team_name: 'Cloud9',
+      red_team_name: selectedOpponent,
+      games: {
+        1: { game_number: 1, blue_picks: {}, red_picks: {}, blue_bans: [], red_bans: [] },
+        2: { game_number: 2, blue_picks: {}, red_picks: {}, blue_bans: [], red_bans: [] },
+        3: { game_number: 3, blue_picks: {}, red_picks: {}, blue_bans: [], red_bans: [] },
+        4: { game_number: 4, blue_picks: {}, red_picks: {}, blue_bans: [], red_bans: [] },
+        5: { game_number: 5, blue_picks: {}, red_picks: {}, blue_bans: [], red_bans: [] }
+      }
+    });
+    setActiveGame(1);
+    setSelectedRole(null);
+    showToast('Series reset. Clean Game 1 draft pool restored.');
+  };
+
   return (
-    <div className="flex min-h-screen bg-[#F8F9FA] text-slate-900 font-sans antialiased">
-      {/* Left Navigation Sidebar */}
-      <Sidebar
+    <div className="relative min-h-screen text-slate-100 font-sans antialiased overflow-x-hidden pb-12">
+      {/* High-Resolution Looping Video & Concentric Celestial Orbits */}
+      <AtmosphericBackground />
+
+      {/* Floating Frosted Glass Capsule Navigation Bar */}
+      <FloatingNav
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        series={series}
         seriesFormat={seriesFormat}
         setSeriesFormat={setSeriesFormat}
         selectedOpponent={selectedOpponent}
         setSelectedOpponent={setSelectedOpponent}
+        onOpenBriefing={() => setShowBriefingModal(true)}
         onResetSeries={handleResetSeries}
         backendStatus={backendStatus}
       />
 
-      {/* Main Workspace Column */}
-      <main className="flex-1 min-w-0 flex flex-col overflow-y-auto">
-        {/* Top Active Match Focal Tracker (Toggl Style) */}
-        <TopTrackerBar
-          series={series}
-          activeGame={activeGame}
-          setActiveGame={setActiveGame}
-          seriesFormat={seriesFormat}
-          selectedOpponent={selectedOpponent}
-          onOpenBriefing={() => setShowBriefingModal(true)}
-          onResetSeries={handleResetSeries}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          backendStatus={backendStatus}
-        />
-
-        {/* View Content */}
-        <div className="flex-1">
-          {activeTab === 'DRAFT' ? (
-            <DraftMatrix
-              currentGame={currentGame}
-              series={series}
-              champions={champions}
-              selectedSide={selectedSide}
-              setSelectedSide={setSelectedSide}
-              roleFilter={roleFilter}
-              setRoleFilter={setRoleFilter}
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-              onPick={handlePick}
-              onUnpick={handleUnpick}
-              recommendations={recommendations}
-              blueStats={blueStats}
-              redStats={redStats}
-              selectedOpponent={selectedOpponent}
-            />
-          ) : (
-            <MacroScouting
-              macroData={macroData}
-              selectedOpponent={selectedOpponent}
-              setSelectedOpponent={setSelectedOpponent}
-            />
-          )}
-        </div>
-      </main>
-
-      {/* Right Series Depletion & Favorites Sidebar */}
-      <RightSummarySidebar
+      {/* Hero Editorial Studio Header (Split Lab / Purple Desert Style) */}
+      <HeroMatchHeader
         series={series}
         activeGame={activeGame}
         setActiveGame={setActiveGame}
-        champions={champions}
-        onQuickPick={handlePick}
-        selectedSide={selectedSide}
+        seriesFormat={seriesFormat}
+        selectedOpponent={selectedOpponent}
+        onOpenBriefing={() => setShowBriefingModal(true)}
+        lockedCount={lockedChampionsForCurrentGame.length}
+        onAutoSolve={handleAutoSolve}
       />
 
-      {/* Printable Coach Briefing Modal */}
+      {/* Main Workspace View */}
+      <main className="relative z-10 mt-2">
+        {activeTab === 'DRAFT' ? (
+          <DraftMatrix
+            currentGame={currentGame}
+            series={series}
+            champions={champions}
+            selectedSide={selectedSide}
+            setSelectedSide={setSelectedSide}
+            roleFilter={roleFilter}
+            setRoleFilter={setRoleFilter}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            onPick={handlePick}
+            onUnpick={handleUnpick}
+            onSelectSlot={handleSelectSlot}
+            selectedRole={selectedRole}
+            recommendations={recommendations}
+            blueStats={blueStats}
+            redStats={redStats}
+            selectedOpponent={selectedOpponent}
+            lockedChampionsForCurrentGame={lockedChampionsForCurrentGame}
+          />
+        ) : (
+          <MacroScouting
+            macroData={macroData}
+            selectedOpponent={selectedOpponent}
+            setSelectedOpponent={setSelectedOpponent}
+          />
+        )}
+      </main>
+
+      {/* Pre-Match Tactical One-Sheet Modal */}
       <CoachBriefingModal
         isOpen={showBriefingModal}
         onClose={() => setShowBriefingModal(false)}
         series={series}
         selectedOpponent={selectedOpponent}
-        lockedChampions={series.locked_out_champions}
+        lockedChampions={lockedChampionsForCurrentGame}
         macroData={macroData}
       />
 
       {/* Clean Feedback Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-5 right-72 z-50 bg-slate-900 text-white text-xs px-3.5 py-2 rounded-xl shadow-xl flex items-center gap-2 font-medium">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+        <div className="fixed bottom-6 right-8 z-50 bg-[#161a2b] border border-white/20 text-white text-xs px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 font-medium backdrop-blur-xl animate-fade-in">
+          <span className="w-2 h-2 rounded-full bg-purple-400 animate-ping" />
           <span>{toastMessage}</span>
         </div>
       )}

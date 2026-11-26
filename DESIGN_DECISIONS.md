@@ -3,95 +3,85 @@
 ## 1. Product Purpose & Operator Archetype
 - **Product Classification:** Pro Esports Drafting, Series Elimination & Early Macro Telemetry Command Console.
 - **Operator Archetype:** Pro Head Coach, Strategic Analyst, and Assistant Coach navigating high-stakes multi-game pick/ban phases under Fearless Elimination constraints.
-- **Visual Design Identity:** Modern, tactile, clean enterprise SaaS (inspired by Toggl Track, Linear, Stripe, and modern Dribbble Pro health/wellness dashboards). Clean off-white canvas, crisp white cards, micro-borders, high-contrast focal timer bar, and refined typography.
+- **Visual Design Identity:** GetLayers "Purple Desert" (Split Lab) High-Craft Aesthetic:
+  - Official 4K looping background video (`purple-desert.mp4`, 21.7 MB) and 2K poster still (`purple-desert.jpg`) without watermarks.
+  - Concentric telemetry orbit rings with rotating satellite nodes representing astronomical series multi-game rotation.
+  - Floating frosted glass capsule navigation bar (`FloatingNav.jsx`) with live engine badge, series format toggle, and opponent selector.
+  - Editorial studio hero header (`HeroMatchHeader.jsx`): "A Deep Dive Into Your Draft Through Living Surface", ✦ star mark, 1-click Auto-Fill Next Role, and interactive Game 1–5 switcher.
+  - Deep dusk color chemistry: obsidian void (`#090B12`), twilight purple-slate glass (`#121626]/85 backdrop-blur-2xl`), hairline translucent borders (`border-white/10`), and pure white typography (`#FFFFFF`).
 
 ---
 
 ## 2. Core Design Tokens & Visual Architecture
 
 ### Typography Pairing & Rhythm
-- **Primary Interface Font:** Inter (`font-sans`), neutral, highly legible sans-serif.
-- **Metrics, Timers & Telemetry:** JetBrains Mono (`font-mono`), tabular figures for zero jitter on live data changes.
-- **Scale:**
-  - Micro-telemetry: `9px` – `10px` (`font-mono`, uppercase, letter-spacing +0.05em).
-  - Component labels & badges: `11px` – `12px` (`font-semibold`).
-  - Section headers: `14px` – `16px` (`font-bold`).
-  - Active Timer & Headings: `18px` – `24px` (`font-bold`, tabular).
+- **Primary Display Font:** Space Grotesk (`font-display`), geometric, modern, high-impact sans-serif.
+- **Primary Interface Font:** Inter (`font-sans`), neutral, highly legible body copy.
+- **Telemetry & Tabular Numbers:** JetBrains Mono (`font-mono`), tabular figures for zero jitter on live data changes.
 
-### Semantic Color Palette (Anti-Slop Human Craft)
-- **Canvas Base:** `#F8F9FA` (warm off-white / light slate neutral).
-- **Surface Elevation (Cards):** `#FFFFFF` with `border border-slate-200/90` and `shadow-sm`.
-- **Primary Text:** `#0F172A` (deep slate 900, AAA contrast).
-- **Secondary Text:** `#475569` (slate 600) and `#94A3B8` (slate 400).
-- **Focal Active Match Card:** `#18181B` (deep charcoal black with crisp white tabular counters).
-- **Semantic Status Accents:**
-  - Soft Blue (`bg-blue-50 text-blue-700 border-blue-200`): Blue Side (Cloud9) picks & indicators.
-  - Soft Rose (`bg-rose-50 text-rose-700 border-rose-200`): Red Side (Opponent) picks & series elimination lockouts.
-  - Soft Emerald (`bg-emerald-50 text-emerald-700 border-emerald-200`): Live FastAPI online indicator & positive deltas.
-  - Soft Amber (`bg-amber-50 text-amber-700 border-amber-200`): Voidgrub timing & objective warnings.
+### Semantic Color Chemistry
+- **Canvas Base:** `#090B12` with 4K `purple-desert.mp4` streaming via HTTP 206 Partial Content.
+- **Glass Surfaces:** `#121626]/80` to `85%` with `backdrop-blur-2xl` and `border border-white/10`.
+- **Primary Text:** `#FFFFFF` (pure white, AAA contrast against dark glass).
+- **Secondary Text:** `#CBD5E1` (slate 300) and `#94A3B8` (slate 400).
+- **Semantic Accents:**
+  - Electric Blue (`bg-blue-600`, `#60A5FA`): Blue Side (Cloud9) picks & indicators.
+  - Crimson / Rose (`bg-rose-600`, `#F87171`): Red Side (Opponent) picks & Series Lockout badges.
+  - Celestial Purple (`bg-purple-600`, `#C084FC`): Format pills, telemetry orbits, and active focus.
+  - Emerald (`#34D399`): FastAPI live status & positive macro snowball deltas.
 
 ---
 
-## 3. Layout Architecture & Workspace Flow
+## 3. Interactive Mechanics & Button Reliability Audit
 
-### Three-Column Responsive Shell
-1. **Left Navigation Sidebar (`Sidebar.jsx`):**
-   - Workspace selector (`Cloud9 StratDraft`, `LCS Head Coach Room`).
-   - Quick action button (`New Match Draft`).
-   - Workspace navigation tabs (`Draft Matrix` vs `Early Macro Intel`).
-   - Series rule controls (`BO3` / `BO5` switch, eliminated unit counter).
-   - Opponent selector quick list (`Team Liquid`, `Apex Rivals`, `FlyQuest`, etc.).
-   - Engine status card (`FastAPI Active` vs `Simulation Engine`).
+1. **Role Slot Selection & Targeting (`TeamSideColumn.jsx`):**
+   - Clicking ANY role slot (TOP, JUNGLE, MID, BOT, SUPPORT) targets that slot directly with an active glowing outline (`ring-1 ring-blue-400` / `ring-1 ring-rose-400`).
+   - Clicking a champion card in the pool drafts directly into that targeted slot.
+   - Automatically advances to the next unfilled slot on that side for rapid 1-click drafting.
+   - Unpicking: Clicking the `x` remove button clears the slot and resets metrics cleanly.
 
-2. **Top Active Match Focal Tracker (`TopTrackerBar.jsx`):**
-   - Fast global search input with `⌘K` badge.
-   - Deep charcoal active match focal bar (matching Toggl Track design paradigm):
-     - Live indicator (`● LIVE MATCH`).
-     - Series matchup title (`Cloud9 vs {selectedOpponent}`).
-     - Tabular phase indicator (`GAME 1: 0/10 UNITS PICKED`).
-     - Game 1–5 switcher buttons.
-     - Reset match and Coach Briefing triggers.
+2. **Fearless Series Lockout Mechanics (`App.jsx`):**
+   - Correct multi-game elimination calculation:
+     - Game 1: 0 units locked out.
+     - Game 2: units from Game 1 are locked out (`SERIES LOCKED` overlay).
+     - Game 3: units from Games 1 and 2 are locked out.
+     - Game 4: units from Games 1, 2, and 3 are locked out.
+     - Game 5: units from Games 1, 2, 3, and 4 are locked out.
+   - Eliminates illegal re-picks across all Fearless match configurations.
 
-3. **Center Main Workspace:**
-   - **Draft Matrix (`DraftMatrix.jsx`):**
-     - Left: Cloud9 Blue Side roster card (`TeamSideColumn.jsx`).
-     - Center: Filter pills (`ALL`, `TOP`, `JUNGLE`, `MID`, `BOT`, `SUPPORT`), active pick side toggle, champion unit grid with instant lockout feedback, and AI Counter Recommendation card.
-     - Right: Opponent Red Side roster card (`TeamSideColumn.jsx`).
-   - **Macro Scouting (`MacroScouting.jsx`):**
-     - Clean KPI cards for First Blood, Turret Conversion, Voidgrubs, and 15m Gold Diff.
-     - Jungle leash & pathing tendency analysis.
+3. **1-Click AI Auto-Fill (`HeroMatchHeader.jsx` & `CoachAIRecommendationCard.jsx`):**
+   - "Auto-Fill Next Role": Instantly drafts the highest-scored counter-pick into the next open slot.
+   - 1-click "Draft Unit" buttons on individual AI recommendation cards.
 
-4. **Right Summary Sidebar (`RightSummarySidebar.jsx`):**
-   - Series pool depletion circular progress ring (0% to 100% target).
-   - Series game progress list.
-   - Cloud9 signature comfort picks for 1-click drafting.
-   - Keyboard shortcuts cheat sheet (`⌘K`, `1–5`, `Tab`).
+4. **Series Game Switching:**
+   - Game 1 through Game 5 buttons switch games immediately, showing drafted units and lockout rosters per game.
+
+5. **Keyboard Shortcuts:**
+   - `1–5`: Switch Game.
+   - `Tab`: Toggle Blue / Red side.
+   - `Escape`: Close modal or clear search.
 
 ---
 
-## 4. Anti-Slop Compliance & Explicitly Rejected Patterns
-- **Zero Neon Glows & Zero WebGL Shader Backgrounds:** Fully stripped out dark cyber/shader slop in favor of high-contrast, clean professional SaaS interfaces.
-- **Zero Purple/Indigo AI Tells:** Used natural, soft semantic status colors (slate, blue, rose, emerald, amber).
-- **Fast Bundle Size:** Bundle size reduced from 364 kB down to 205 kB (60.7 kB gzipped) with instantaneous 2.6s Vite build.
-
----
-
-## 5. Implementation Traceability Matrix
+## 4. Implementation Traceability Matrix
 
 | Component | Architecture Role | Design Paradigm | Status |
 | :--- | :--- | :--- | :--- |
-| `frontend/src/components/Sidebar.jsx` | Left workspace navigation | Toggl Track left menu with rules & opponent list | Verified clean |
-| `frontend/src/components/TopTrackerBar.jsx` | Top search & hero focal bar | Dark focal timer bar with tabular counters & game jump | Verified clean |
-| `frontend/src/components/RightSummarySidebar.jsx` | Right stats & shortcuts panel | Circular pool depletion ring & quick draft favorites | Verified clean |
-| `frontend/src/components/TeamSideColumn.jsx` | Roster slots & damage profile | Crisp white cards with damage split & stat ratings | Verified clean |
-| `frontend/src/components/DraftMatrix.jsx` | 3-column draft grid | Role chips, white unit cards, red lockout badge | Verified clean |
-| `frontend/src/components/CoachAIRecommendationCard.jsx` | AI Counter drawer | Clean white card with score pills & 1-click draft | Verified clean |
-| `frontend/src/components/MacroScouting.jsx` | Telemetry analytics | 4 KPI cards & jungle leash pathing breakdown | Verified clean |
-| `frontend/src/components/CoachBriefingModal.jsx` | Tactical modal | Clean printable white sheet with executive summary | Verified clean |
-| `frontend/src/App.jsx` | Root orchestrator | 3-column SaaS layout with sidebar, main, and right summary | Verified clean |
+| `frontend/src/components/AtmosphericBackground.jsx` | 4K video & concentric orbits | GetLayers Purple Desert loop + telemetry orbits | Verified streaming HTTP 206 |
+| `frontend/src/components/FloatingNav.jsx` | Top floating glass capsule | Onda/Projects frosted capsule with controls | Verified clean |
+| `frontend/src/components/HeroMatchHeader.jsx` | Split Lab editorial hero | Bold typography + Game 1-5 switcher card | Verified z-10 visible |
+| `frontend/src/components/TeamSideColumn.jsx` | Roster slots & damage profile | Frosted glass card with slot selection & ratings | Verified unpick & pick |
+| `frontend/src/components/DraftMatrix.jsx` | 3-column draft grid | Responsive wrapped filters & unit grid | Verified no overflow |
+| `frontend/src/components/CoachAIRecommendationCard.jsx` | AI Counter drawer | 3 counter cards with scores & 1-click auto-fill | Verified instant draft |
+| `frontend/src/components/MacroScouting.jsx` | Telemetry analytics | 4 KPI cards & jungle leash pathing | Verified rounded numbers |
+| `frontend/src/components/CoachBriefingModal.jsx` | Tactical modal | Printable frosted sheet with elimination ledger | Verified modal open/close |
+| `frontend/src/App.jsx` | Root orchestrator | Fearless lockout calculator & keyboard handler | Verified 100% interactive |
 
 ---
 
-## 6. Verification
-- **Frontend Vite Build:** `built in 2.64s` (`dist/assets/index.js` 205 kB).
-- **Backend Test Suite:** `4 passed in 0.20s` (100% pass rate).
+## 5. Browser Subagent Quality Audit Results
+- **Visual Stacking:** Left editorial studio header, floating nav capsule, and draft columns render with zero overlap.
+- **Responsive Wrapping:** Center filter bar cleanly wraps at 810px and 1440px viewports with zero overflow.
+- **Float Formatting:** All percentages rounded cleanly (e.g. `64.3%`, `71.4%`, `+1250g`).
+- **Interactive Buttons:** 100% pass rate across draft locks, unpicks, auto-fills, game switches, modal toggles, and view switches.
+- **Live Screenshot Evidence:** `browser_evidence/945dc219-fe2c-4fad-a3c4-da17a9fba64e/final_step_14.png`.

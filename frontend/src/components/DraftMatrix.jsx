@@ -1,5 +1,5 @@
 import React from 'react';
-import { Lock, Search, X, Check } from 'lucide-react';
+import { Lock, Search, X, Check, Filter } from 'lucide-react';
 import TeamSideColumn from './TeamSideColumn';
 import CoachAIRecommendationCard from './CoachAIRecommendationCard';
 
@@ -17,10 +17,13 @@ export default function DraftMatrix({
   setSearchQuery,
   onPick,
   onUnpick,
+  onSelectSlot,
+  selectedRole,
   recommendations,
   blueStats,
   redStats,
-  selectedOpponent
+  selectedOpponent,
+  lockedChampionsForCurrentGame
 }) {
   const filteredChampions = champions.filter((c) => {
     const matchesRole =
@@ -32,151 +35,182 @@ export default function DraftMatrix({
   });
 
   return (
-    <div className="grid grid-cols-12 gap-4 p-6 select-none">
-      {/* Left Column: Cloud9 Blue Team */}
-      <div className="col-span-3">
-        <TeamSideColumn
-          side="BLUE"
-          teamName="Cloud9"
-          picks={currentGame.blue_picks}
-          champions={champions}
-          onUnpick={(role) => onUnpick('BLUE', role)}
-          stats={blueStats}
-        />
-      </div>
-
-      {/* Center Column: Interactive Unit Pool & Draft Controls */}
-      <div className="col-span-6 flex flex-col space-y-4">
-        {/* Filter and Selection Header */}
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-3 flex items-center justify-between shadow-sm">
-          {/* Role Filter Tabs */}
-          <div className="flex items-center space-x-1 bg-slate-100 p-1 rounded-xl">
-            {['ALL', ...ROLES].map((r) => {
-              const isActive = roleFilter === r;
-              return (
-                <button
-                  key={r}
-                  onClick={() => setRoleFilter(r)}
-                  className={`px-3 py-1 text-xs font-semibold rounded-lg transition ${
-                    isActive 
-                      ? 'bg-white text-slate-900 shadow-sm' 
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  {r}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Active Side Selector */}
-          <div className="flex items-center space-x-1 bg-slate-100 p-1 rounded-xl">
-            <button
-              onClick={() => setSelectedSide('BLUE')}
-              className={`px-3 py-1 text-xs font-bold rounded-lg transition ${
-                selectedSide === 'BLUE' 
-                  ? 'bg-blue-600 text-white shadow-sm' 
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Blue Pick (C9)
-            </button>
-
-            <button
-              onClick={() => setSelectedSide('RED')}
-              className={`px-3 py-1 text-xs font-bold rounded-lg transition ${
-                selectedSide === 'RED' 
-                  ? 'bg-rose-600 text-white shadow-sm' 
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Red Pick ({selectedOpponent})
-            </button>
-          </div>
+    <div className="max-w-7xl mx-auto px-6 py-4 select-none">
+      <div className="grid grid-cols-12 gap-5">
+        {/* Left Column: Cloud9 Blue Team */}
+        <div className="col-span-3">
+          <TeamSideColumn
+            side="BLUE"
+            teamName="Cloud9"
+            picks={currentGame.blue_picks}
+            champions={champions}
+            onUnpick={onUnpick}
+            onSelectSlot={onSelectSlot}
+            selectedRole={selectedRole}
+            selectedSide={selectedSide}
+            stats={blueStats}
+          />
         </div>
 
-        {/* Unit Selection Grid */}
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm max-h-[500px] overflow-y-auto">
-          <div className="grid grid-cols-4 gap-2.5">
-            {filteredChampions.map((champ) => {
-              const isLockedOut = series.locked_out_champions.includes(champ.id);
-              const isPickedBlue = Object.values(currentGame.blue_picks).includes(champ.id);
-              const isPickedRed = Object.values(currentGame.red_picks).includes(champ.id);
-              const isUnavailable = isLockedOut || isPickedBlue || isPickedRed;
+        {/* Center Column: Interactive Unit Pool & Selection Controls */}
+        <div className="col-span-6 flex flex-col space-y-4">
+          {/* Filter Bar with Role Tabs, Search & Side Selector */}
+          <div className="bg-[#121626]/80 backdrop-blur-2xl border border-white/10 rounded-3xl p-3 flex flex-wrap items-center justify-between shadow-xl gap-2.5">
+            {/* Role Filter Tabs */}
+            <div className="flex items-center space-x-1 bg-white/[0.04] p-1 rounded-full border border-white/5">
+              {['ALL', ...ROLES].map((r) => {
+                const isActive = roleFilter === r;
+                return (
+                  <button
+                    key={r}
+                    onClick={() => setRoleFilter(r)}
+                    className={`px-3 py-1 text-xs font-semibold rounded-full transition-all ${
+                      isActive 
+                        ? 'bg-white text-slate-950 shadow-md font-bold' 
+                        : 'text-slate-300 hover:text-white hover:bg-white/[0.06]'
+                    }`}
+                  >
+                    {r}
+                  </button>
+                );
+              })}
+            </div>
 
-              return (
-                <div
-                  key={champ.id}
-                  onClick={() => !isUnavailable && onPick(champ, selectedSide)}
-                  className={`relative p-3 rounded-xl border select-none transition-all ${
-                    isLockedOut
-                      ? 'bg-rose-50/50 border-rose-200 opacity-60 cursor-not-allowed'
-                      : isPickedBlue
-                      ? 'bg-blue-50/80 border-blue-400 shadow-sm cursor-default'
-                      : isPickedRed
-                      ? 'bg-rose-50/80 border-rose-400 shadow-sm cursor-default'
-                      : 'bg-white hover:bg-slate-50 border-slate-200 hover:border-slate-300 hover:shadow-sm cursor-pointer'
+            {/* Quick Search & Side Selector Row */}
+            <div className="flex items-center gap-2">
+              {/* Quick Search Input */}
+              <div className="relative w-32 sm:w-36">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2 pointer-events-none" />
+                <input
+                  type="text"
+                  placeholder="Filter..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-white/[0.06] border border-white/10 rounded-full pl-7 pr-6 py-1 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-purple-400 transition"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-2 top-1.5 text-slate-400 hover:text-white"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
+
+              {/* Side Selector Pills */}
+              <div className="flex items-center space-x-1 bg-white/[0.04] p-1 rounded-full border border-white/5 shrink-0">
+                <button
+                  onClick={() => setSelectedSide('BLUE')}
+                  className={`px-3 py-1 text-xs font-bold rounded-full transition-all ${
+                    selectedSide === 'BLUE' 
+                      ? 'bg-blue-600 text-white shadow-md' 
+                      : 'text-slate-400 hover:text-slate-200'
                   }`}
                 >
-                  <div className="flex justify-between items-start">
-                    <span className="font-semibold text-xs text-slate-900 truncate pr-1">
-                      {champ.name}
-                    </span>
-                    <span className="text-[10px] font-mono px-1 py-0.2 rounded bg-slate-100 text-slate-600 border border-slate-200">
-                      {champ.tier}
-                    </span>
-                  </div>
+                  Blue (C9)
+                </button>
 
-                  <div className="mt-2 flex items-center justify-between text-[10px] text-slate-500 font-mono">
-                    <span>{champ.primary_role}</span>
-                    <span className="capitalize">{champ.damage_type.toLowerCase()}</span>
-                  </div>
+                <button
+                  onClick={() => setSelectedSide('RED')}
+                  className={`px-3 py-1 text-xs font-bold rounded-full transition-all ${
+                    selectedSide === 'RED' 
+                      ? 'bg-rose-600 text-white shadow-md' 
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  Red ({selectedOpponent})
+                </button>
+              </div>
+            </div>
+          </div>
 
-                  {/* Lockout Overlay with Red Badge */}
-                  {isLockedOut && (
-                    <div className="absolute inset-0 bg-white/80 rounded-xl flex flex-col items-center justify-center backdrop-blur-[1px]">
-                      <Lock className="w-3.5 h-3.5 text-rose-600 mb-0.5" />
-                      <span className="text-[8px] font-bold text-rose-700 tracking-wider uppercase font-mono">
-                        LOCKED
+          {/* Unit Selection Grid */}
+          <div className="bg-[#121626]/80 backdrop-blur-2xl border border-white/10 rounded-3xl p-4 shadow-xl max-h-[460px] overflow-y-auto">
+            <div className="grid grid-cols-4 gap-2.5">
+              {filteredChampions.map((champ) => {
+                const isLockedOut = lockedChampionsForCurrentGame.includes(champ.id);
+                const isPickedBlue = Object.values(currentGame.blue_picks).includes(champ.id);
+                const isPickedRed = Object.values(currentGame.red_picks).includes(champ.id);
+                const isUnavailable = isLockedOut || isPickedBlue || isPickedRed;
+
+                return (
+                  <div
+                    key={champ.id}
+                    onClick={() => onPick(champ, selectedSide)}
+                    className={`relative p-3 rounded-2xl border select-none transition-all ${
+                      isLockedOut
+                        ? 'bg-rose-950/20 border-rose-900/40 opacity-45 cursor-not-allowed'
+                        : isPickedBlue
+                        ? 'bg-blue-950/40 border-blue-500 shadow-md cursor-default'
+                        : isPickedRed
+                        ? 'bg-rose-950/40 border-rose-500 shadow-md cursor-default'
+                        : 'bg-white/[0.04] hover:bg-white/[0.09] border-white/10 hover:border-purple-400/60 hover:shadow-lg cursor-pointer active:scale-95'
+                    }`}
+                  >
+                    <div className="flex justify-between items-start">
+                      <span className="font-semibold text-xs text-white truncate pr-1 font-display">
+                        {champ.name}
+                      </span>
+                      <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-white/10 text-slate-300 border border-white/10">
+                        {champ.tier}
                       </span>
                     </div>
-                  )}
 
-                  {/* Picked Indicators */}
-                  {isPickedBlue && (
-                    <div className="absolute top-2 right-2">
-                      <span className="w-2 h-2 rounded-full bg-blue-600 block ring-2 ring-white" />
+                    <div className="mt-2 flex items-center justify-between text-[10px] text-slate-400 font-mono">
+                      <span>{champ.primary_role}</span>
+                      <span className="capitalize">{champ.damage_type.toLowerCase()}</span>
                     </div>
-                  )}
-                  {isPickedRed && (
-                    <div className="absolute top-2 right-2">
-                      <span className="w-2 h-2 rounded-full bg-rose-600 block ring-2 ring-white" />
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+
+                    {/* Lockout Overlay with Red Badge */}
+                    {isLockedOut && (
+                      <div className="absolute inset-0 bg-black/75 rounded-2xl flex flex-col items-center justify-center backdrop-blur-[1px]">
+                        <Lock className="w-3.5 h-3.5 text-rose-400 mb-0.5" />
+                        <span className="text-[8px] font-bold text-rose-300 tracking-wider uppercase font-mono">
+                          SERIES LOCKED
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Picked Indicators */}
+                    {isPickedBlue && (
+                      <div className="absolute top-2 right-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-blue-400 block ring-2 ring-black" />
+                      </div>
+                    )}
+                    {isPickedRed && (
+                      <div className="absolute top-2 right-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-rose-400 block ring-2 ring-black" />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
+
+          {/* Live Coach AI Suggestions Drawer */}
+          <CoachAIRecommendationCard
+            recommendations={recommendations}
+            selectedSide={selectedSide}
+            onAutoLock={onPick}
+          />
         </div>
 
-        {/* Live Coach AI Suggestions Drawer */}
-        <CoachAIRecommendationCard
-          recommendations={recommendations}
-          selectedSide={selectedSide}
-          onAutoLock={onPick}
-        />
-      </div>
-
-      {/* Right Column: Red Team (Opponent) */}
-      <div className="col-span-3">
-        <TeamSideColumn
-          side="RED"
-          teamName={selectedOpponent}
-          picks={currentGame.red_picks}
-          champions={champions}
-          onUnpick={(role) => onUnpick('RED', role)}
-          stats={redStats}
-        />
+        {/* Right Column: Red Team (Opponent) */}
+        <div className="col-span-3">
+          <TeamSideColumn
+            side="RED"
+            teamName={selectedOpponent}
+            picks={currentGame.red_picks}
+            champions={champions}
+            onUnpick={onUnpick}
+            onSelectSlot={onSelectSlot}
+            selectedRole={selectedRole}
+            selectedSide={selectedSide}
+            stats={redStats}
+          />
+        </div>
       </div>
     </div>
   );

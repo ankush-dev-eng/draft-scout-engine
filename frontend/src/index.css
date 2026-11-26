@@ -3,26 +3,72 @@
 @tailwind utilities;
 
 @layer base {
-  body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  :root {
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-anton: 'Anton', sans-serif;
+    --font-onest: 'Onest', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
   }
-  code, pre {
-    font-family: 'JetBrains Mono', monospace;
+
+  body {
+    font-family: var(--font-sans);
+  }
+
+  code, pre, .font-mono {
+    font-family: var(--font-mono);
+  }
+
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .font-anton {
+    font-family: var(--font-anton);
+  }
+
+  .font-onest {
+    font-family: var(--font-onest);
   }
 }
 
-/* Custom scrollbars for competitive dashboard */
+/* Glassmorphism & High-Craft Utilities */
+.glass-panel {
+  background: rgba(14, 21, 37, 0.65);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.glass-panel-sheen {
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-panel-sheen::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+  pointer-events: none;
+}
+
+/* Custom Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #080C16;
+  background: #050811;
 }
 ::-webkit-scrollbar-thumb {
-  background: #233554;
-  border-radius: 3px;
+  background: #1e293b;
+  border-radius: 99px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #00AEEF;
+  background: #00aeef;
 }

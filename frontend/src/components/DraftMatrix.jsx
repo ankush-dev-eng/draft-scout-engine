@@ -49,16 +49,16 @@ export default function DraftMatrix({
       {/* Center Column: Interactive Unit Pool & Draft Controls */}
       <div className="col-span-6 flex flex-col space-y-4 h-full">
         {/* Filter and Selection Header */}
-        <div className="bg-[#0D1527] border border-[#233554] rounded-2xl p-3 flex items-center justify-between shadow-xl">
+        <div className="glass-panel glass-panel-sheen rounded-[1.4rem] p-3 flex items-center justify-between shadow-2xl">
           {/* Role Filter Tabs with Framer Motion layoutId */}
-          <div className="flex items-center space-x-1 bg-[#090E1B] p-1 rounded-xl border border-[#1E293B]">
+          <div className="flex items-center space-x-1 bg-white/[0.03] p-1 rounded-xl border border-white/10 backdrop-blur-md">
             {['ALL', ...ROLES].map((r) => {
               const isActive = roleFilter === r;
               return (
                 <button
                   key={r}
                   onClick={() => setRoleFilter(r)}
-                  className={`relative px-3 py-1 text-xs font-semibold rounded-lg transition-colors ${
+                  className={`relative px-3 py-1 text-xs font-semibold rounded-lg transition-colors font-display ${
                     isActive ? 'text-black font-bold' : 'text-slate-300 hover:text-white'
                   }`}
                 >
@@ -76,14 +76,14 @@ export default function DraftMatrix({
           </div>
 
           {/* Search Input */}
-          <div className="relative w-44">
+          <div className="relative w-48">
             <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5 pointer-events-none" />
             <input
               type="text"
-              placeholder="Search unit..."
+              placeholder="Filter pool..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[#142036] border border-[#233554] rounded-xl pl-8 pr-7 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#00AEEF] transition-all"
+              className="w-full bg-white/[0.04] border border-white/10 rounded-xl pl-8 pr-7 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#00AEEF] transition-all font-mono"
             />
             {searchQuery && (
               <button
@@ -96,10 +96,10 @@ export default function DraftMatrix({
           </div>
 
           {/* Active Side Selector */}
-          <div className="flex items-center space-x-1 bg-[#090E1B] p-1 rounded-xl border border-[#1E293B]">
+          <div className="flex items-center space-x-1 bg-white/[0.03] p-1 rounded-xl border border-white/10 backdrop-blur-md">
             <button
               onClick={() => setSelectedSide('BLUE')}
-              className={`relative px-3 py-1 text-xs font-bold rounded-lg transition-colors ${
+              className={`relative px-3 py-1 text-xs font-bold rounded-lg transition-colors font-display ${
                 selectedSide === 'BLUE' ? 'text-black' : 'text-slate-400 hover:text-slate-200'
               }`}
             >
@@ -115,7 +115,7 @@ export default function DraftMatrix({
 
             <button
               onClick={() => setSelectedSide('RED')}
-              className={`relative px-3 py-1 text-xs font-bold rounded-lg transition-colors ${
+              className={`relative px-3 py-1 text-xs font-bold rounded-lg transition-colors font-display ${
                 selectedSide === 'RED' ? 'text-white' : 'text-slate-400 hover:text-slate-200'
               }`}
             >
@@ -132,7 +132,7 @@ export default function DraftMatrix({
         </div>
 
         {/* Unit Selection Grid with Smooth Re-layout and Hover Physics */}
-        <div className="flex-1 bg-[#0D1527] border border-[#233554] rounded-2xl p-4 overflow-y-auto shadow-inner">
+        <div className="flex-1 glass-panel glass-panel-sheen rounded-[1.4rem] p-4 overflow-y-auto shadow-2xl">
           <motion.div 
             layout
             className="grid grid-cols-4 gap-3"
@@ -155,18 +155,18 @@ export default function DraftMatrix({
                     whileTap={!isUnavailable ? { scale: 0.97 } : {}}
                     transition={{ type: 'spring', stiffness: 450, damping: 30 }}
                     onClick={() => !isUnavailable && onPick(champ, selectedSide)}
-                    className={`relative p-3 rounded-xl border select-none transition-all ${
+                    className={`relative p-3 rounded-xl border select-none transition-all backdrop-blur-md ${
                       isLockedOut
-                        ? 'bg-rose-950/20 border-rose-900/35 opacity-45 cursor-not-allowed'
+                        ? 'bg-rose-950/25 border-rose-900/40 opacity-40 cursor-not-allowed'
                         : isPickedBlue
-                        ? 'bg-[#00AEEF]/10 border-[#00AEEF] shadow-md shadow-[#00AEEF]/10 cursor-default'
+                        ? 'bg-[#00AEEF]/15 border-[#00AEEF] shadow-lg shadow-[#00AEEF]/20 cursor-default'
                         : isPickedRed
-                        ? 'bg-rose-500/10 border-rose-500 shadow-md shadow-rose-500/10 cursor-default'
-                        : 'bg-[#142036] hover:bg-[#1C2C4B] border-[#233554] hover:border-[#00AEEF] cursor-pointer shadow-sm'
+                        ? 'bg-rose-500/15 border-rose-500 shadow-lg shadow-rose-500/20 cursor-default'
+                        : 'bg-white/[0.03] hover:bg-white/[0.08] border-white/10 hover:border-[#00AEEF]/60 cursor-pointer shadow-sm'
                     }`}
                   >
                     <div className="flex justify-between items-start">
-                      <span className="font-semibold text-sm text-white">{champ.name}</span>
+                      <span className="font-bold text-sm text-white font-display">{champ.name}</span>
                       <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-black/40 text-slate-300 border border-white/5">
                         {champ.tier}
                       </span>

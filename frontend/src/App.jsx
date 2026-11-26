@@ -5,6 +5,9 @@ import SeriesTimeline from './components/SeriesTimeline';
 import DraftMatrix from './components/DraftMatrix';
 import MacroScouting from './components/MacroScouting';
 import CoachBriefingModal from './components/CoachBriefingModal';
+import FluidCanvasBackground from './components/FluidCanvasBackground';
+import Preloader from './components/Preloader';
+import MarqueeTicker from './components/MarqueeTicker';
 import {
   ORIGINAL_UNITS,
   checkBackendHealth,
@@ -14,6 +17,7 @@ import {
 } from './api';
 
 export default function App() {
+  const [appLoaded, setAppLoaded] = useState(false);
   const [activeTab, setActiveTab] = useState('DRAFT');
   const [activeGame, setActiveGame] = useState(1);
   const [seriesFormat, setSeriesFormat] = useState('BO5');
@@ -231,28 +235,44 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#070A12] text-slate-100 flex flex-col font-sans select-none antialiased">
-      {/* Top Application Header */}
-      <Header
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        onOpenBriefing={() => setShowBriefingModal(true)}
-        onResetSeries={handleResetSeries}
-        backendStatus={backendStatus}
-      />
+    <div className="min-h-screen bg-[#050811] text-slate-100 flex flex-col font-sans select-none antialiased relative overflow-x-hidden">
+      {/* Real-time WebGL Background Fluid Simulation */}
+      <FluidCanvasBackground />
 
-      {/* Multi-Game Series Timeline Bar */}
-      <SeriesTimeline
-        activeGame={activeGame}
-        setActiveGame={setActiveGame}
-        seriesFormat={seriesFormat}
-        setSeriesFormat={setSeriesFormat}
-        series={series}
-        lockedCount={series.locked_out_champions.length}
-      />
+      {/* Pre-roll Calibration Intro */}
+      <Preloader onComplete={() => setAppLoaded(true)} />
 
-      {/* Dynamic Viewport with Framer Motion AnimatePresence */}
-      <div className="flex-1 overflow-hidden relative">
+      {/* Main Application Shell revealed once calibration finishes */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: appLoaded ? 1 : 0 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="flex flex-col min-h-screen relative z-10"
+      >
+        {/* Top Application Header */}
+        <Header
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          onOpenBriefing={() => setShowBriefingModal(true)}
+          onResetSeries={handleResetSeries}
+          backendStatus={backendStatus}
+        />
+
+        {/* High-Velocity Telemetry Marquee Ticker */}
+        <MarqueeTicker />
+
+        {/* Multi-Game Series Timeline Bar */}
+        <SeriesTimeline
+          activeGame={activeGame}
+          setActiveGame={setActiveGame}
+          seriesFormat={seriesFormat}
+          setSeriesFormat={setSeriesFormat}
+          series={series}
+          lockedCount={series.locked_out_champions.length}
+        />
+
+        {/* Dynamic Viewport with Framer Motion AnimatePresence */}
+        <div className="flex-1 overflow-hidden relative">
         <AnimatePresence mode="wait">
           {activeTab === 'DRAFT' ? (
             <motion.div
@@ -324,6 +344,7 @@ export default function App() {
           </motion.div>
         )}
       </AnimatePresence>
+      </motion.div>
     </div>
   );
 }

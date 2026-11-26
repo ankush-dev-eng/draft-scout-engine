@@ -14,16 +14,16 @@ export default function SeriesTimeline({
   const gameNumbers = Array.from({ length: maxGames }, (_, i) => i + 1);
 
   return (
-    <div className="bg-[#0B1120] border-b border-[#1E293B] px-6 py-2.5 flex items-center justify-between shadow-inner">
+    <div className="bg-[#070B18]/70 backdrop-blur-xl border-b border-white/[0.08] px-6 py-2.5 flex items-center justify-between shadow-lg relative z-20">
       {/* Series Navigation */}
       <div className="flex items-center space-x-4">
-        <div className="flex items-center space-x-2 text-xs uppercase tracking-wider text-slate-400 font-bold">
+        <div className="flex items-center space-x-2 text-xs uppercase tracking-wider text-slate-400 font-bold font-display">
           <Trophy className="w-3.5 h-3.5 text-[#00AEEF]" />
           <span>Series Match:</span>
         </div>
 
         {/* Game Buttons with Framer motion layoutId */}
-        <div className="flex items-center space-x-1.5 bg-[#0F172A] p-1 rounded-xl border border-[#233554]">
+        <div className="flex items-center space-x-1.5 bg-white/[0.03] p-1 rounded-xl border border-white/10 backdrop-blur-md">
           {gameNumbers.map((gameNum) => {
             const gameData = series.games[gameNum];
             const bluePickCount = Object.keys(gameData?.blue_picks || {}).length;
@@ -37,7 +37,7 @@ export default function SeriesTimeline({
                 onClick={() => setActiveGame(gameNum)}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className={`relative px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors flex items-center space-x-1.5 ${
+                className={`relative px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors flex items-center space-x-1.5 font-display ${
                   isActive ? 'text-black' : 'text-slate-300 hover:text-white'
                 }`}
               >
@@ -68,12 +68,12 @@ export default function SeriesTimeline({
         </div>
 
         {/* Format Selector (BO3 / BO5) */}
-        <div className="flex items-center space-x-1 bg-[#0F172A] px-1.5 py-1 rounded-lg border border-[#233554] text-[11px] font-mono">
+        <div className="flex items-center space-x-1 bg-white/[0.03] px-1.5 py-1 rounded-lg border border-white/10 text-[11px] font-mono backdrop-blur-md">
           <button
             onClick={() => setSeriesFormat('BO3')}
             className={`px-2 py-0.5 rounded transition ${
               seriesFormat === 'BO3'
-                ? 'bg-[#1E293B] text-[#00AEEF] font-bold'
+                ? 'bg-white/10 text-[#00AEEF] font-bold'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
@@ -84,7 +84,7 @@ export default function SeriesTimeline({
             onClick={() => setSeriesFormat('BO5')}
             className={`px-2 py-0.5 rounded transition ${
               seriesFormat === 'BO5'
-                ? 'bg-[#1E293B] text-[#00AEEF] font-bold'
+                ? 'bg-white/10 text-[#00AEEF] font-bold'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >

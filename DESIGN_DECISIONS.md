@@ -80,12 +80,15 @@
 | Component | Specialist Skill | Applied Technique | Verification & Status |
 | :--- | :--- | :--- | :--- |
 | `frontend/src/api.js` | `13-api-integration` | Resilient FastAPI client with fallback heuristic solver | Verified with timeout handling & offline simulation |
-| `frontend/src/components/Header.jsx` | `25-framer-motion`, `better-ui` | `layoutId="activeTabBadge"`, live ping indicator | Verified smooth tab sliding in production build |
+| `frontend/src/components/FluidCanvasBackground.jsx` | `30-canvas-animation`, `44-webgl` | WebGL real-time simplex noise fluid with mouse ripple and radial scrim | 60 FPS ambient background with 0 contrast degradation |
+| `frontend/src/components/Preloader.jsx` | `39-loading-experiences`, `25-framer-motion` | 000% → 100% tabular calibration intro with upward spring wipe | Verified seamless transition into dashboard |
+| `frontend/src/components/MarqueeTicker.jsx` | `32-text-animation` | 24s infinite linear telemetry ticker with tabular figures | Verified smooth CSS keyframe scroll |
+| `frontend/src/components/Header.jsx` | `25-framer-motion`, `better-ui` | `layoutId="activeTabBadge"`, Gravity-style pill briefing button | Verified smooth tab sliding in production build |
 | `frontend/src/components/SeriesTimeline.jsx` | `25-framer-motion` | `layoutId="activeGameIndicator"`, animated lockout pulse | Verified Game 1-5 selection & multi-game counter |
-| `frontend/src/components/TeamSideColumn.jsx` | `02-react`, `25-framer-motion` | Role slot drop-in animation, spring damage split bar | Verified unpick & pick animations |
-| `frontend/src/components/CoachAIRecommendationCard.jsx` | `25-framer-motion` | Staggered recommendation cards, 1-click auto-lock | Verified instant lock-in dispatch |
-| `frontend/src/components/DraftMatrix.jsx` | `25-framer-motion`, `unslop` | Dynamic unit grid with `layout`, role filter sliding tabs | Verified zero-lag filtering across all roles |
-| `frontend/src/components/MacroScouting.jsx` | `27-scroll-storytelling` | SVG jungle pathing visualizer with animated dashed dasharray | Verified dynamic opponent switching |
+| `frontend/src/components/TeamSideColumn.jsx` | `02-react`, `25-framer-motion` | Gradient border ring, top hairline sheen, role slot drop-in animation | Verified unpick & pick animations |
+| `frontend/src/components/CoachAIRecommendationCard.jsx` | `25-framer-motion` | Glass panel sheen, staggered recommendation cards, 1-click auto-lock | Verified instant lock-in dispatch |
+| `frontend/src/components/DraftMatrix.jsx` | `25-framer-motion`, `unslop` | Dynamic unit grid with `layout`, frosted glass filter header | Verified zero-lag filtering across all roles |
+| `frontend/src/components/MacroScouting.jsx` | `27-scroll-storytelling` | SVG jungle pathing visualizer & Gravity Section 02 KPI cards | Verified dynamic opponent switching |
 | `frontend/src/components/CoachBriefingModal.jsx` | `25-framer-motion` | `AnimatePresence` backdrop blur modal, print stylesheet | Verified modal open/close & print trigger |
 | `backend/Dockerfile` & `frontend/Dockerfile` | `aiq-deploy` | Multi-stage Docker containers with Nginx SPA proxy | Verified Docker build contracts |
 | `.github/workflows/ci.yml` | `55-frontend-testing` | GitHub Actions workflow running pytest & npm build | Verified clean YAML syntax |

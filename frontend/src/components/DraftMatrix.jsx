@@ -1,6 +1,5 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, Search, Sparkles, X, CheckCircle } from 'lucide-react';
+import { Lock, Search, X, Check } from 'lucide-react';
 import TeamSideColumn from './TeamSideColumn';
 import CoachAIRecommendationCard from './CoachAIRecommendationCard';
 
@@ -33,9 +32,9 @@ export default function DraftMatrix({
   });
 
   return (
-    <div className="grid grid-cols-12 gap-5 h-[calc(100vh-125px)] p-6 overflow-hidden">
+    <div className="grid grid-cols-12 gap-4 p-6 select-none">
       {/* Left Column: Cloud9 Blue Team */}
-      <div className="col-span-3 h-full">
+      <div className="col-span-3">
         <TeamSideColumn
           side="BLUE"
           teamName="Cloud9"
@@ -47,166 +46,117 @@ export default function DraftMatrix({
       </div>
 
       {/* Center Column: Interactive Unit Pool & Draft Controls */}
-      <div className="col-span-6 flex flex-col space-y-4 h-full">
+      <div className="col-span-6 flex flex-col space-y-4">
         {/* Filter and Selection Header */}
-        <div className="glass-panel glass-panel-sheen rounded-[1.4rem] p-3 flex items-center justify-between shadow-2xl">
-          {/* Role Filter Tabs with Framer Motion layoutId */}
-          <div className="flex items-center space-x-1 bg-white/[0.03] p-1 rounded-xl border border-white/10 backdrop-blur-md">
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-3 flex items-center justify-between shadow-sm">
+          {/* Role Filter Tabs */}
+          <div className="flex items-center space-x-1 bg-slate-100 p-1 rounded-xl">
             {['ALL', ...ROLES].map((r) => {
               const isActive = roleFilter === r;
               return (
                 <button
                   key={r}
                   onClick={() => setRoleFilter(r)}
-                  className={`relative px-3 py-1 text-xs font-semibold rounded-lg transition-colors font-display ${
-                    isActive ? 'text-black font-bold' : 'text-slate-300 hover:text-white'
+                  className={`px-3 py-1 text-xs font-semibold rounded-lg transition ${
+                    isActive 
+                      ? 'bg-white text-slate-900 shadow-sm' 
+                      : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeRoleFilter"
-                      className="absolute inset-0 bg-[#00AEEF] rounded-lg shadow-sm"
-                      transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-                    />
-                  )}
-                  <span className="relative z-10">{r}</span>
+                  {r}
                 </button>
               );
             })}
           </div>
 
-          {/* Search Input */}
-          <div className="relative w-48">
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5 pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Filter pool..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white/[0.04] border border-white/10 rounded-xl pl-8 pr-7 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#00AEEF] transition-all font-mono"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-2.5 text-slate-400 hover:text-white"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-
           {/* Active Side Selector */}
-          <div className="flex items-center space-x-1 bg-white/[0.03] p-1 rounded-xl border border-white/10 backdrop-blur-md">
+          <div className="flex items-center space-x-1 bg-slate-100 p-1 rounded-xl">
             <button
               onClick={() => setSelectedSide('BLUE')}
-              className={`relative px-3 py-1 text-xs font-bold rounded-lg transition-colors font-display ${
-                selectedSide === 'BLUE' ? 'text-black' : 'text-slate-400 hover:text-slate-200'
+              className={`px-3 py-1 text-xs font-bold rounded-lg transition ${
+                selectedSide === 'BLUE' 
+                  ? 'bg-blue-600 text-white shadow-sm' 
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              {selectedSide === 'BLUE' && (
-                <motion.div
-                  layoutId="activeSideBadge"
-                  className="absolute inset-0 bg-[#00AEEF] rounded-lg"
-                  transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-                />
-              )}
-              <span className="relative z-10">Blue Pick</span>
+              Blue Pick (C9)
             </button>
 
             <button
               onClick={() => setSelectedSide('RED')}
-              className={`relative px-3 py-1 text-xs font-bold rounded-lg transition-colors font-display ${
-                selectedSide === 'RED' ? 'text-white' : 'text-slate-400 hover:text-slate-200'
+              className={`px-3 py-1 text-xs font-bold rounded-lg transition ${
+                selectedSide === 'RED' 
+                  ? 'bg-rose-600 text-white shadow-sm' 
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              {selectedSide === 'RED' && (
-                <motion.div
-                  layoutId="activeSideBadge"
-                  className="absolute inset-0 bg-rose-500 rounded-lg"
-                  transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-                />
-              )}
-              <span className="relative z-10">Red Pick</span>
+              Red Pick ({selectedOpponent})
             </button>
           </div>
         </div>
 
-        {/* Unit Selection Grid with Smooth Re-layout and Hover Physics */}
-        <div className="flex-1 glass-panel glass-panel-sheen rounded-[1.4rem] p-4 overflow-y-auto shadow-2xl">
-          <motion.div 
-            layout
-            className="grid grid-cols-4 gap-3"
-          >
-            <AnimatePresence>
-              {filteredChampions.map((champ) => {
-                const isLockedOut = series.locked_out_champions.includes(champ.id);
-                const isPickedBlue = Object.values(currentGame.blue_picks).includes(champ.id);
-                const isPickedRed = Object.values(currentGame.red_picks).includes(champ.id);
-                const isUnavailable = isLockedOut || isPickedBlue || isPickedRed;
+        {/* Unit Selection Grid */}
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm max-h-[500px] overflow-y-auto">
+          <div className="grid grid-cols-4 gap-2.5">
+            {filteredChampions.map((champ) => {
+              const isLockedOut = series.locked_out_champions.includes(champ.id);
+              const isPickedBlue = Object.values(currentGame.blue_picks).includes(champ.id);
+              const isPickedRed = Object.values(currentGame.red_picks).includes(champ.id);
+              const isUnavailable = isLockedOut || isPickedBlue || isPickedRed;
 
-                return (
-                  <motion.div
-                    key={champ.id}
-                    layout
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    whileHover={!isUnavailable ? { scale: 1.03, y: -2 } : {}}
-                    whileTap={!isUnavailable ? { scale: 0.97 } : {}}
-                    transition={{ type: 'spring', stiffness: 450, damping: 30 }}
-                    onClick={() => !isUnavailable && onPick(champ, selectedSide)}
-                    className={`relative p-3 rounded-xl border select-none transition-all backdrop-blur-md ${
-                      isLockedOut
-                        ? 'bg-rose-950/25 border-rose-900/40 opacity-40 cursor-not-allowed'
-                        : isPickedBlue
-                        ? 'bg-[#00AEEF]/15 border-[#00AEEF] shadow-lg shadow-[#00AEEF]/20 cursor-default'
-                        : isPickedRed
-                        ? 'bg-rose-500/15 border-rose-500 shadow-lg shadow-rose-500/20 cursor-default'
-                        : 'bg-white/[0.03] hover:bg-white/[0.08] border-white/10 hover:border-[#00AEEF]/60 cursor-pointer shadow-sm'
-                    }`}
-                  >
-                    <div className="flex justify-between items-start">
-                      <span className="font-bold text-sm text-white font-display">{champ.name}</span>
-                      <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-black/40 text-slate-300 border border-white/5">
-                        {champ.tier}
+              return (
+                <div
+                  key={champ.id}
+                  onClick={() => !isUnavailable && onPick(champ, selectedSide)}
+                  className={`relative p-3 rounded-xl border select-none transition-all ${
+                    isLockedOut
+                      ? 'bg-rose-50/50 border-rose-200 opacity-60 cursor-not-allowed'
+                      : isPickedBlue
+                      ? 'bg-blue-50/80 border-blue-400 shadow-sm cursor-default'
+                      : isPickedRed
+                      ? 'bg-rose-50/80 border-rose-400 shadow-sm cursor-default'
+                      : 'bg-white hover:bg-slate-50 border-slate-200 hover:border-slate-300 hover:shadow-sm cursor-pointer'
+                  }`}
+                >
+                  <div className="flex justify-between items-start">
+                    <span className="font-semibold text-xs text-slate-900 truncate pr-1">
+                      {champ.name}
+                    </span>
+                    <span className="text-[10px] font-mono px-1 py-0.2 rounded bg-slate-100 text-slate-600 border border-slate-200">
+                      {champ.tier}
+                    </span>
+                  </div>
+
+                  <div className="mt-2 flex items-center justify-between text-[10px] text-slate-500 font-mono">
+                    <span>{champ.primary_role}</span>
+                    <span className="capitalize">{champ.damage_type.toLowerCase()}</span>
+                  </div>
+
+                  {/* Lockout Overlay with Red Badge */}
+                  {isLockedOut && (
+                    <div className="absolute inset-0 bg-white/80 rounded-xl flex flex-col items-center justify-center backdrop-blur-[1px]">
+                      <Lock className="w-3.5 h-3.5 text-rose-600 mb-0.5" />
+                      <span className="text-[8px] font-bold text-rose-700 tracking-wider uppercase font-mono">
+                        LOCKED
                       </span>
                     </div>
+                  )}
 
-                    <div className="mt-2.5 flex items-center justify-between text-[11px] text-slate-400 font-mono">
-                      <span>{champ.primary_role}</span>
-                      <span className="capitalize">{champ.damage_type.toLowerCase()}</span>
+                  {/* Picked Indicators */}
+                  {isPickedBlue && (
+                    <div className="absolute top-2 right-2">
+                      <span className="w-2 h-2 rounded-full bg-blue-600 block ring-2 ring-white" />
                     </div>
-
-                    {/* Lockout Overlay with Crimson Glow & Lock */}
-                    {isLockedOut && (
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="absolute inset-0 bg-black/75 rounded-xl flex flex-col items-center justify-center backdrop-blur-[1.5px]"
-                      >
-                        <Lock className="w-5 h-5 text-rose-400 mb-1" />
-                        <span className="text-[9px] font-bold text-rose-300 tracking-wider uppercase font-mono">
-                          SERIES ELIMINATED
-                        </span>
-                      </motion.div>
-                    )}
-
-                    {/* Picked Indicators */}
-                    {isPickedBlue && (
-                      <div className="absolute top-2 right-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#00AEEF] block ring-2 ring-black" />
-                      </div>
-                    )}
-                    {isPickedRed && (
-                      <div className="absolute top-2 right-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-rose-500 block ring-2 ring-black" />
-                      </div>
-                    )}
-                  </motion.div>
-                );
-              })}
-            </AnimatePresence>
-          </motion.div>
+                  )}
+                  {isPickedRed && (
+                    <div className="absolute top-2 right-2">
+                      <span className="w-2 h-2 rounded-full bg-rose-600 block ring-2 ring-white" />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         {/* Live Coach AI Suggestions Drawer */}
@@ -218,7 +168,7 @@ export default function DraftMatrix({
       </div>
 
       {/* Right Column: Red Team (Opponent) */}
-      <div className="col-span-3 h-full">
+      <div className="col-span-3">
         <TeamSideColumn
           side="RED"
           teamName={selectedOpponent}

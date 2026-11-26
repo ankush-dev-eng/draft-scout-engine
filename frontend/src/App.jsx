@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import Header from './components/Header';
-import SeriesTimeline from './components/SeriesTimeline';
+import Sidebar from './components/Sidebar';
+import TopTrackerBar from './components/TopTrackerBar';
+import RightSummarySidebar from './components/RightSummarySidebar';
 import DraftMatrix from './components/DraftMatrix';
 import MacroScouting from './components/MacroScouting';
 import CoachBriefingModal from './components/CoachBriefingModal';
-import FluidCanvasBackground from './components/FluidCanvasBackground';
-import Preloader from './components/Preloader';
-import MarqueeTicker from './components/MarqueeTicker';
 import {
   ORIGINAL_UNITS,
   checkBackendHealth,
@@ -17,7 +14,6 @@ import {
 } from './api';
 
 export default function App() {
-  const [appLoaded, setAppLoaded] = useState(false);
   const [activeTab, setActiveTab] = useState('DRAFT');
   const [activeGame, setActiveGame] = useState(1);
   const [seriesFormat, setSeriesFormat] = useState('BO5');
@@ -187,7 +183,6 @@ export default function App() {
 
   const handleUnpick = (side, role) => {
     const picks = side === 'BLUE' ? { ...currentGame.blue_picks } : { ...currentGame.red_picks };
-    const removedChampId = picks[role];
     delete picks[role];
 
     // Recalculate remaining locked out champions across other games
@@ -235,92 +230,77 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050811] text-slate-100 flex flex-col font-sans select-none antialiased relative overflow-x-hidden">
-      {/* Real-time WebGL Background Fluid Simulation */}
-      <FluidCanvasBackground />
+    <div className="flex min-h-screen bg-[#F8F9FA] text-slate-900 font-sans antialiased">
+      {/* Left Navigation Sidebar */}
+      <Sidebar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        series={series}
+        seriesFormat={seriesFormat}
+        setSeriesFormat={setSeriesFormat}
+        selectedOpponent={selectedOpponent}
+        setSelectedOpponent={setSelectedOpponent}
+        onResetSeries={handleResetSeries}
+        backendStatus={backendStatus}
+      />
 
-      {/* Pre-roll Calibration Intro */}
-      <Preloader onComplete={() => setAppLoaded(true)} />
-
-      {/* Main Application Shell revealed once calibration finishes */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: appLoaded ? 1 : 0 }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="flex flex-col min-h-screen relative z-10"
-      >
-        {/* Top Application Header */}
-        <Header
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          onOpenBriefing={() => setShowBriefingModal(true)}
-          onResetSeries={handleResetSeries}
-          backendStatus={backendStatus}
-        />
-
-        {/* High-Velocity Telemetry Marquee Ticker */}
-        <MarqueeTicker />
-
-        {/* Multi-Game Series Timeline Bar */}
-        <SeriesTimeline
+      {/* Main Workspace Column */}
+      <main className="flex-1 min-w-0 flex flex-col overflow-y-auto">
+        {/* Top Active Match Focal Tracker (Toggl Style) */}
+        <TopTrackerBar
+          series={series}
           activeGame={activeGame}
           setActiveGame={setActiveGame}
           seriesFormat={seriesFormat}
-          setSeriesFormat={setSeriesFormat}
-          series={series}
-          lockedCount={series.locked_out_champions.length}
+          selectedOpponent={selectedOpponent}
+          onOpenBriefing={() => setShowBriefingModal(true)}
+          onResetSeries={handleResetSeries}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          backendStatus={backendStatus}
         />
 
-        {/* Dynamic Viewport with Framer Motion AnimatePresence */}
-        <div className="flex-1 overflow-hidden relative">
-        <AnimatePresence mode="wait">
+        {/* View Content */}
+        <div className="flex-1">
           {activeTab === 'DRAFT' ? (
-            <motion.div
-              key="draft-view"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-              className="h-full"
-            >
-              <DraftMatrix
-                currentGame={currentGame}
-                series={series}
-                champions={champions}
-                selectedSide={selectedSide}
-                setSelectedSide={setSelectedSide}
-                roleFilter={roleFilter}
-                setRoleFilter={setRoleFilter}
-                searchQuery={searchQuery}
-                setSearchQuery={setSearchQuery}
-                onPick={handlePick}
-                onUnpick={handleUnpick}
-                recommendations={recommendations}
-                blueStats={blueStats}
-                redStats={redStats}
-                selectedOpponent={selectedOpponent}
-              />
-            </motion.div>
+            <DraftMatrix
+              currentGame={currentGame}
+              series={series}
+              champions={champions}
+              selectedSide={selectedSide}
+              setSelectedSide={setSelectedSide}
+              roleFilter={roleFilter}
+              setRoleFilter={setRoleFilter}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              onPick={handlePick}
+              onUnpick={handleUnpick}
+              recommendations={recommendations}
+              blueStats={blueStats}
+              redStats={redStats}
+              selectedOpponent={selectedOpponent}
+            />
           ) : (
-            <motion.div
-              key="macro-view"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-              className="h-full"
-            >
-              <MacroScouting
-                macroData={macroData}
-                selectedOpponent={selectedOpponent}
-                setSelectedOpponent={setSelectedOpponent}
-              />
-            </motion.div>
+            <MacroScouting
+              macroData={macroData}
+              selectedOpponent={selectedOpponent}
+              setSelectedOpponent={setSelectedOpponent}
+            />
           )}
-        </AnimatePresence>
-      </div>
+        </div>
+      </main>
 
-      {/* Coach Briefing Modal */}
+      {/* Right Series Depletion & Favorites Sidebar */}
+      <RightSummarySidebar
+        series={series}
+        activeGame={activeGame}
+        setActiveGame={setActiveGame}
+        champions={champions}
+        onQuickPick={handlePick}
+        selectedSide={selectedSide}
+      />
+
+      {/* Printable Coach Briefing Modal */}
       <CoachBriefingModal
         isOpen={showBriefingModal}
         onClose={() => setShowBriefingModal(false)}
@@ -330,21 +310,13 @@ export default function App() {
         macroData={macroData}
       />
 
-      {/* Feedback Toast Notification */}
-      <AnimatePresence>
-        {toastMessage && (
-          <motion.div
-            initial={{ opacity: 0, y: 30, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-5 right-6 z-50 bg-[#0E172A] border border-[#00AEEF]/40 text-slate-100 text-xs px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2 font-mono"
-          >
-            <span className="w-2 h-2 rounded-full bg-[#00AEEF] animate-ping" />
-            <span>{toastMessage}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      </motion.div>
+      {/* Clean Feedback Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-5 right-72 z-50 bg-slate-900 text-white text-xs px-3.5 py-2 rounded-xl shadow-xl flex items-center gap-2 font-medium">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,90 +1,80 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Sparkles, ArrowRight, ShieldCheck, Check } from 'lucide-react';
 
 export default function CoachAIRecommendationCard({
   recommendations,
   selectedSide,
   onAutoLock
 }) {
+  const isBlue = selectedSide === 'BLUE';
+
   return (
-    <div className="glass-panel glass-panel-sheen rounded-[1.4rem] p-3.5 shadow-2xl relative overflow-hidden">
-      <div className="flex items-center justify-between pb-2 border-b border-white/[0.08]">
-        <div className="flex items-center space-x-2.5">
-          <motion.div 
-            animate={{ rotate: [0, 10, -10, 0] }}
-            transition={{ repeat: Infinity, duration: 4 }}
-            className="w-7 h-7 rounded-lg bg-[#00AEEF]/20 text-[#00AEEF] flex items-center justify-center shadow-[0_0_10px_rgba(0,174,239,0.3)]"
-          >
-            <Sparkles className="w-4 h-4" />
-          </motion.div>
+    <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm select-none">
+      <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
+        <div className="flex items-center space-x-2">
+          <div className="w-6 h-6 rounded-lg bg-slate-900 text-white flex items-center justify-center">
+            <Sparkles className="w-3.5 h-3.5" />
+          </div>
           <div>
-            <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5 font-display">
-              Draft Solver Engine <span className="text-[10px] text-[#00AEEF] font-mono font-normal">({selectedSide} RECOMMENDATIONS)</span>
+            <h4 className="text-xs font-bold text-slate-900">
+              AI Counter Recommendations
             </h4>
-            <p className="text-[11px] text-slate-400 font-sans">
-              Optimal counter-balance computed against series elimination rules
+            <p className="text-[11px] text-slate-500">
+              Optimal counter-picks for {selectedSide} side based on fearless multi-game depletion
             </p>
           </div>
         </div>
 
-        <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20 flex items-center gap-1">
+        <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
           <ShieldCheck className="w-3 h-3" /> FEARLESS OPTIMIZED
         </span>
       </div>
 
-      {/* Recommendations List with Framer Motion Stagger */}
-      <div className="mt-2.5 grid grid-cols-3 gap-2.5">
-        <AnimatePresence mode="popLayout">
-          {recommendations.slice(0, 3).map((item, idx) => {
-            const champ = item.champion;
-            return (
-              <motion.div
-                key={champ.id}
-                layout
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 28, delay: idx * 0.05 }}
-                className="bg-white/[0.03] hover:bg-white/[0.07] border border-white/10 hover:border-[#00AEEF]/60 rounded-xl p-2.5 flex flex-col justify-between transition-all group shadow-sm backdrop-blur-md"
-              >
-                <div>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <span className="font-bold text-xs text-white group-hover:text-[#00AEEF] transition-colors flex items-center gap-1 font-display">
-                        {champ.name}
-                      </span>
-                      <span className="text-[10px] font-mono text-slate-400 uppercase">
-                        {champ.primary_role} • {champ.damage_type}
-                      </span>
-                    </div>
-
-                    <div className="flex flex-col items-end">
-                      <span className="text-[11px] font-black font-mono text-[#00AEEF]">
-                        {item.score}
-                      </span>
-                      <span className="text-[9px] text-slate-500 font-mono">SCORE</span>
-                    </div>
+      {/* 3 Recommended Cards */}
+      <div className="mt-3 grid grid-cols-3 gap-3">
+        {recommendations.slice(0, 3).map((item) => {
+          const champ = item.champion;
+          return (
+            <div
+              key={champ.id}
+              className="bg-slate-50/80 border border-slate-200/80 hover:border-slate-300 rounded-xl p-3 flex flex-col justify-between transition-all hover:shadow-sm"
+            >
+              <div>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <span className="font-bold text-xs text-slate-900">
+                      {champ.name}
+                    </span>
+                    <p className="text-[10px] font-mono text-slate-500 uppercase mt-0.5">
+                      {champ.primary_role} · {champ.damage_type}
+                    </p>
                   </div>
 
-                  <p className="text-[10px] text-slate-300 mt-1.5 line-clamp-2 leading-relaxed font-sans">
-                    {item.reason}
-                  </p>
+                  <div className="text-right">
+                    <span className="text-xs font-bold font-mono text-blue-600">
+                      {item.score}
+                    </span>
+                    <span className="text-[9px] text-slate-400 font-mono block">SCORE</span>
+                  </div>
                 </div>
 
-                <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => onAutoLock(champ, selectedSide, champ.primary_role)}
-                  className="mt-2.5 w-full py-1.5 px-2 rounded-lg bg-[#00AEEF]/10 hover:bg-[#00AEEF] text-[#00AEEF] hover:text-black font-bold text-[10px] font-mono border border-[#00AEEF]/30 hover:border-[#00AEEF] transition-all flex items-center justify-center gap-1"
-                >
-                  <span>LOCK IN</span>
-                  <ArrowRight className="w-3 h-3" />
-                </motion.button>
-              </motion.div>
-            );
-          })}
-        </AnimatePresence>
+                <p className="text-[11px] text-slate-600 mt-2 line-clamp-2 leading-relaxed">
+                  {item.reason}
+                </p>
+              </div>
+
+              <button
+                onClick={() => onAutoLock(champ, selectedSide, champ.primary_role)}
+                className={`mt-3 w-full py-1.5 px-2 rounded-lg text-white font-semibold text-[11px] transition flex items-center justify-center gap-1 shadow-sm ${
+                  isBlue ? 'bg-blue-600 hover:bg-blue-700' : 'bg-rose-600 hover:bg-rose-700'
+                }`}
+              >
+                <span>Draft Unit</span>
+                <ArrowRight className="w-3 h-3" />
+              </button>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

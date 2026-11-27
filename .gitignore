@@ -19,6 +19,7 @@ dist/
 *.jsonl
 data/raw/
 stl-hackathon-2026-grid-starter/
+video_production/
 
 # Keep config directories
 !.idea/

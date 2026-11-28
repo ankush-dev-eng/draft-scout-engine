@@ -28,6 +28,27 @@ Existing scouting platforms only provide static win rates or end-game summaries.
 
 ## 2. Core Capabilities
 
+### 🎮 Dual-Title Esports Powerhouse: LoL Fearless + VALORANT & Game Changers
+- **Seamless 1-Click Title Switcher**: Instantly pivot between **League of Legends** (LCS Fearless Series) and **VALORANT / Game Changers** (VCT 2026).
+- **Cloud9 Game Changers Integration**: Tailored champion comps highlighting Cloud9's world-class GC roster (`meL`, `noia`, `Jazzyk1ns`, `kellzzz`) with player mapping for both VCT and Game Changers rosters.
+- **Top VCT & GC Rivals**: Dedicated scout databases for tier-1 contenders: *Sentinels, Paper Rex, Fnatic, G2 Gozen, Shopify Rebellion, and Team Liquid BR*.
+
+### ⏱️ 30-Second Stage Simulator & Opponent Bot (`StageSimulatorBar.jsx`, `app/bot_drafter.py`)
+- **Toggl Track-Inspired Live Stage Clock**: Real-time ticking 30-second digital clock (`00:30` → `00:00`) with color shifts (green → amber at 10s → pulsing red at 5s).
+- **Web Audio API Acoustic Feedback**: Native in-browser audio synthesis generating subtle tick chirps in the final 10 seconds and an ascending chime upon pick lock-in, with instant mute toggle.
+- **AI Opponent Coach Bot**: When the turn passes to Opponent Red side, the stage simulator initiates an intelligent auto-draft routine with realistic thinking latency:
+  - **Spawn (Team Liquid - LCS)**: Prioritizes aggressive early lane dominance, high engage (≥4), and commanding frontline to dictate early dragon/grub fights.
+  - **kkOma (T1 - LCK)**: Prioritizes late-game scaling insurance, objective discipline, and tier-S waveclear.
+  - **Potter (Evil Geniuses - VCT)**: Unorthodox utility layering, double-initiator dart/drone reconnaissance, and deep site denial.
+  - **Aleks (Fnatic - EMEA)**: Explosive site execution, high-mobility duelists, and overwhelming flash-entry combos.
+
+### 🗺️ VCT 2026 Competitive Map Veto & Squad Utility Radar (`MapVetoBar.jsx`, `ValorantMatrix.jsx`)
+- **7 Official VCT Maps**: *Ascent, Haven, Bind, Lotus, Sunset, Abyss, Split* featuring live attack/defense win rate splits and Cloud9 Game Changers historical win percentages.
+- **Interactive Map Veto Flow**: 1-click map ban and pick mechanism with visual state tracking.
+- **5-Dimension Utility Coverage Meters**: Real-time calculated bars measuring **Flash**, **Smoke**, **Recon**, **Site Denial**, and **Entry** ratings (1–5 scale).
+- **Tactical Vulnerability Warnings**: Instant rule-based detection for missing roles (e.g. *"No primary Controller: lack of vision denial for site hits"* or *"No primary Sentinel: vulnerable to aggressive defensive flanks"*).
+- **1-Click Signature Comp Deployment**: Instantly pre-load Cloud9's optimized tournament composition for the active map.
+
 ### ⚡ Fearless Elimination Solver (`app/draft_solver.py`)
 - Enforces strict multi-game lockout across BO3 and BO5 match structures:
   - Game 1: 0 units locked (full 40+ unit pool available).
@@ -48,9 +69,9 @@ Existing scouting platforms only provide static win rates or end-game summaries.
 
 ### 🎨 Clean White SaaS Dashboard on a Living 4K Surface
 - **Toggl Track-Inspired Edge-to-Edge Layout**:
-  - **Left Sidebar**: Workspace navigation, series format toggle (`BO3`/`BO5`), eliminated unit tracker, and opponent selector.
-  - **Center Top Tracker**: Live search (`⌘K`), side switcher (`Tab`), Auto-Solve button, and a jet-black focal match card (`bg-[#18181B]`) displaying live draft status and `G1`–`G5` pills.
-  - **Center Draft Matrix**: Full-width 12-column grid featuring Blue Team slots, Center Champion pool with role filters, AI Counter drawer, and Red Team slots.
+  - **Left Sidebar**: Dual-title switcher (`LoL Fearless` vs `VCT / GC`), series rules, eliminated units, dynamic opponent rosters, and engine status.
+  - **Top Focal Tracker**: Live search (`⌘K`), active side toggle, 1-click Auto-Solve, Coach Briefing trigger, and focal match status card.
+  - **Stage Simulator Bar**: Centered digital countdown, audio chimes, turn indicator, and AI opponent coach selector.
   - **Right Summary Sidebar**: Circular **Pool Depletion** SVG gauge, mini match timeline, **Cloud9 Comfort Picks** (with 1-click quick draft), and keyboard shortcuts.
 - **Living 4K Surface**: Seamlessly loops GetLayers 4K video (`purple-desert.mp4`) behind translucent frosted glass (`bg-white/90 backdrop-blur-2xl border border-slate-200/90`), paired with concentric celestial telemetry orbits.
 

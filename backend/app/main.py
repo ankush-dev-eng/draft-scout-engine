@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from typing import List, Optional
+from typing import List, Optional, Dict
 from pydantic import BaseModel
 from app.models import (
     ChampionData, Role, TeamSide, ActionType, DraftAction, 
@@ -8,6 +8,11 @@ from app.models import (
 )
 from app.draft_solver import DraftEngine
 from app.macro_engine import MacroEngine
+from app.valorant_engine import (
+    ValorantEngine, VALORANT_AGENTS, VALORANT_MAP_POOL, 
+    AgentData, MapData, ValorantCompMetrics
+)
+from app.bot_drafter import BotDrafter, COACH_PROFILES
 
 app = FastAPI(
     title="Cloud9 Draft & Macro Scouting Engine",
@@ -116,3 +121,61 @@ def get_head_to_head(blue: str = "Cloud9", red: str = "Team Liquid"):
         "red_team": red_prof,
         "early_game_favored": blue if blue_prof["first_15_gold_diff_avg"] > red_prof["first_15_gold_diff_avg"] else red
     }
+
+# ==========================================
+# VALORANT & GAME CHANGERS MODULE ENDPOINTS
+# ==========================================
+
+class ValorantEvaluateRequest(BaseModel):
+    agent_ids: List[str]
+
+@app.get("/api/valorant/agents", response_model=List[AgentData])
+def get_valorant_agents():
+    return VALORANT_AGENTS
+
+@app.get("/api/valorant/maps", response_model=List[MapData])
+def get_valorant_maps():
+    return VALORANT_MAP_POOL
+
+@app.post("/api/valorant/evaluate", response_model=ValorantCompMetrics)
+def evaluate_valorant_composition(req: ValorantEvaluateRequest):
+    return ValorantEngine.evaluate_composition(req.agent_ids)
+
+# ==========================================
+# 30-SECOND STAGE SIMULATOR & BOT DRAFTER
+# ==========================================
+
+class BotPickLolRequest(BaseModel):
+    red_picks: Dict[str, str] = {}
+    blue_picks: Dict[str, str] = {}
+    locked_out_champs: List[str] = []
+    coach_id: str = "SPAWN"
+
+class BotPickValorantRequest(BaseModel):
+    red_agents: List[str] = []
+    blue_agents: List[str] = []
+    map_id: str = "ascent"
+    coach_id: str = "POTTER"
+
+@app.get("/api/simulator/coaches")
+def get_simulator_coaches():
+    return COACH_PROFILES
+
+@app.post("/api/simulator/bot-pick-lol")
+def get_bot_pick_lol(req: BotPickLolRequest):
+    return BotDrafter.pick_champion_lol(
+        red_picks=req.red_picks,
+        blue_picks=req.blue_picks,
+        locked_out_champs=req.locked_out_champs,
+        coach_id=req.coach_id
+    )
+
+@app.post("/api/simulator/bot-pick-valorant")
+def get_bot_pick_valorant(req: BotPickValorantRequest):
+    return BotDrafter.pick_agent_valorant(
+        red_agents=req.red_agents,
+        blue_agents=req.blue_agents,
+        map_id=req.map_id,
+        coach_id=req.coach_id
+    )
+

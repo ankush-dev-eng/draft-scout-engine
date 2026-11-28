@@ -3,10 +3,11 @@ import {
   Search, 
   FileText, 
   RotateCcw, 
-  Sparkles,
-  Lock,
-  Zap,
-  ArrowRight
+  Sparkles, 
+  Lock, 
+  Compass,
+  Crosshair,
+  Swords
 } from 'lucide-react';
 
 export default function TopTrackerBar({
@@ -23,7 +24,11 @@ export default function TopTrackerBar({
   lockedCount = 0,
   onAutoSolve,
   selectedSide,
-  setSelectedSide
+  setSelectedSide,
+  selectedTitle = 'LOL',
+  activeMap,
+  blueValorantSquad = [],
+  redValorantSquad = []
 }) {
   const maxGames = seriesFormat === 'BO5' ? 5 : 3;
   const gameNumbers = Array.from({ length: maxGames }, (_, i) => i + 1);
@@ -31,6 +36,9 @@ export default function TopTrackerBar({
   const blueCount = Object.keys(currentGame?.blue_picks || {}).length;
   const redCount = Object.keys(currentGame?.red_picks || {}).length;
   const totalPicks = blueCount + redCount;
+
+  const isValorant = selectedTitle === 'VALORANT';
+  const valTotal = blueValorantSquad.length + redValorantSquad.length;
 
   return (
     <div className="space-y-3 px-5 pt-4 pb-3 bg-white/85 backdrop-blur-2xl border-b border-slate-200/90 text-slate-900 select-none shadow-xs">
@@ -41,7 +49,7 @@ export default function TopTrackerBar({
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5 pointer-events-none" />
           <input
             type="text"
-            placeholder="Search champion, flex role, or trait (⌘K)..."
+            placeholder={isValorant ? "Search agent, player (meL, OXY), or utility role (⌘K)..." : "Search champion, flex role, or trait (⌘K)..."}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-14 py-2 text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/30 transition shadow-inner"
@@ -86,7 +94,7 @@ export default function TopTrackerBar({
             title="Auto-draft optimal counter recommendation into target slot"
           >
             <Sparkles className="w-3.5 h-3.5 text-purple-200" />
-            <span>Auto-Solve Pick</span>
+            <span>{isValorant ? 'Auto-Pick Agent' : 'Auto-Solve Pick'}</span>
           </button>
 
           {/* Coach Briefing Modal Trigger */}
@@ -111,13 +119,13 @@ export default function TopTrackerBar({
       </div>
 
       {/* Hero Focal Active Match Tracker (Matching Toggl Track Reference) */}
-      <div className="bg-[#18181B] text-white rounded-2xl p-3.5 shadow-xl flex items-center justify-between border border-slate-800">
+      <div className="bg-[#18181B] text-white rounded-2xl p-3.5 shadow-xl flex flex-wrap items-center justify-between border border-slate-800 gap-3">
         {/* Left: Active Match Info */}
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
             <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
             <span className="text-[11px] font-mono font-bold tracking-wider uppercase text-rose-300">
-              LIVE MATCH
+              {isValorant ? 'VCT / GC STAGE' : 'LIVE MATCH'}
             </span>
           </div>
 
@@ -125,25 +133,36 @@ export default function TopTrackerBar({
 
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-bold text-sm text-white font-display">Cloud9</span>
+              <span className="font-bold text-sm text-white font-display">
+                {isValorant ? 'Cloud9 (VCT / GC)' : 'Cloud9'}
+              </span>
               <span className="text-xs text-slate-400 font-mono">vs</span>
               <span className="font-bold text-sm text-white font-display">{selectedOpponent}</span>
             </div>
             <div className="flex items-center gap-2 text-[11px] text-slate-400 mt-0.5">
-              <span className="font-mono text-purple-300">{seriesFormat} Series</span>
+              <span className="font-mono text-purple-300">
+                {isValorant ? `Map: ${activeMap?.name || 'Ascent'}` : `${seriesFormat} Series`}
+              </span>
               <span>•</span>
-              <span className="text-slate-300 font-medium">Fearless Elimination Active</span>
-              {lockedCount > 0 ? (
+              <span className="text-slate-300 font-medium">
+                {isValorant ? 'VCT 2026 Competitive Veto' : 'Fearless Elimination Active'}
+              </span>
+              {!isValorant && lockedCount > 0 ? (
                 <>
                   <span>•</span>
                   <span className="text-rose-400 font-mono font-semibold flex items-center gap-1">
                     <Lock className="w-3 h-3" /> {lockedCount} Inactive (Locked)
                   </span>
                 </>
-              ) : (
+              ) : !isValorant ? (
                 <>
                   <span>•</span>
                   <span className="text-emerald-400 font-mono font-semibold">Full Pool Available</span>
+                </>
+              ) : (
+                <>
+                  <span>•</span>
+                  <span className="text-purple-300 font-mono font-semibold">C9 GC Win: {activeMap?.c9_gc_win_pct}%</span>
                 </>
               )}
             </div>
@@ -154,51 +173,60 @@ export default function TopTrackerBar({
         <div className="flex items-center space-x-3">
           <div className="bg-black/50 border border-white/10 rounded-xl px-4 py-1.5 flex items-center gap-2.5">
             <span className="text-[10px] font-mono text-purple-300 uppercase tracking-widest font-bold">
-              GAME {activeGame}
+              {isValorant ? 'SQUAD' : `GAME ${activeGame}`}
             </span>
             <span className="font-mono text-base font-bold tracking-tight text-white tabular-nums">
-              {totalPicks === 10 ? 'DRAFT COMPLETE' : `${totalPicks}/10 UNITS DRAFTED`}
+              {isValorant
+                ? `${valTotal}/10 AGENTS PICKED`
+                : totalPicks === 10
+                ? 'DRAFT COMPLETE'
+                : `${totalPicks}/10 UNITS DRAFTED`}
             </span>
           </div>
         </div>
 
-        {/* Right: Game Switcher & Action Controls */}
+        {/* Right: Game Switcher or Map Veto Tag & Action Controls */}
         <div className="flex items-center space-x-2">
-          {/* Game Switcher Pills (G1 to G5) */}
-          <div className="flex items-center bg-white/10 p-1 rounded-xl border border-white/10">
-            {gameNumbers.map((gNum) => {
-              const isActive = activeGame === gNum;
-              const gPicks = Object.keys(series.games[gNum]?.blue_picks || {}).length +
-                             Object.keys(series.games[gNum]?.red_picks || {}).length;
+          {!isValorant ? (
+            <div className="flex items-center bg-white/10 p-1 rounded-xl border border-white/10">
+              {gameNumbers.map((gNum) => {
+                const isActive = activeGame === gNum;
+                const gPicks = Object.keys(series.games[gNum]?.blue_picks || {}).length +
+                               Object.keys(series.games[gNum]?.red_picks || {}).length;
 
-              return (
-                <button
-                  key={gNum}
-                  onClick={() => setActiveGame(gNum)}
-                  className={`px-3 py-1 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 ${
-                    isActive
-                      ? 'bg-white text-slate-950 font-bold shadow-md'
-                      : 'text-slate-300 hover:text-white hover:bg-white/10'
-                  }`}
-                >
-                  <span>G{gNum}</span>
-                  {gPicks > 0 && (
-                    <span className={`text-[9px] font-mono px-1 rounded ${
-                      isActive ? 'bg-slate-200 text-slate-900' : 'bg-white/10 text-slate-300'
-                    }`}>
-                      {gPicks}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
+                return (
+                  <button
+                    key={gNum}
+                    onClick={() => setActiveGame(gNum)}
+                    className={`px-3 py-1 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 ${
+                      isActive
+                        ? 'bg-white text-slate-950 font-bold shadow-md'
+                        : 'text-slate-300 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    <span>G{gNum}</span>
+                    {gPicks > 0 && (
+                      <span className={`text-[9px] font-mono px-1 rounded ${
+                        isActive ? 'bg-slate-200 text-slate-900' : 'bg-white/10 text-slate-300'
+                      }`}>
+                        {gPicks}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="px-3 py-1.5 rounded-xl bg-white/10 border border-white/10 text-xs font-mono font-semibold text-purple-200">
+              VCT Map: {activeMap?.name || 'Ascent'}
+            </div>
+          )}
 
           {/* Reset Series Draft */}
           <button
             onClick={onResetSeries}
             className="p-2 rounded-xl bg-white/10 hover:bg-rose-500/20 text-slate-300 hover:text-rose-300 border border-white/10 transition active:scale-95"
-            title="Reset Series Draft"
+            title="Reset Draft"
           >
             <RotateCcw className="w-4 h-4" />
           </button>
